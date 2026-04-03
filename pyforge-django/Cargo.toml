@@ -1,0 +1,32 @@
+# Author: Abdulwahed Mansour
+[package]
+name = "pyforge-django"
+version = "0.1.0"
+edition = "2021"
+authors = ["Abdulwahed Mansour"]
+description = "High-performance Django integration layer — Rust-accelerated serialization, validation, and field mapping for Django 5.x+"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/abdulwahed-sweden/pyforge"
+keywords = ["django", "pyforge", "serialization", "validation", "python"]
+categories = ["api-bindings", "web-programming"]
+rust-version = "1.83"
+
+[lib]
+name = "pyforge_django"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyforge = { path = "..", features = ["macros", "experimental-async", "chrono", "rust_decimal", "uuid", "serde"] }
+chrono = { version = "0.4.25", features = ["serde"] }
+rust_decimal = { version = "1.15", features = ["serde-with-str"] }
+uuid = { version = "1.12.0", features = ["v4", "serde"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rayon = "1.6"
+thiserror = "2"
+
+[dev-dependencies]
+pyforge = { path = "..", features = ["macros", "auto-initialize", "experimental-async", "chrono", "rust_decimal", "uuid", "serde"] }
+
+[lints]
+workspace = true

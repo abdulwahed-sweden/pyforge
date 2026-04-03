@@ -172,6 +172,7 @@ members = [
     "pyo3-macros",
     "pyo3-macros-backend",
     "pyo3-introspection",
+    "pyforge-django",
     "pytests",
     "examples",
 ]

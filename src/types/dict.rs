@@ -28,10 +28,8 @@ pyobject_native_type!(
 );
 
 /// Represents a Python `dict_keys`.
-
 #[repr(transparent)]
 pub struct PyDictKeys(PyAny);
-
 
 pyobject_native_type_core!(
     PyDictKeys,
@@ -42,10 +40,8 @@ pyobject_native_type_core!(
 );
 
 /// Represents a Python `dict_values`.
-
 #[repr(transparent)]
 pub struct PyDictValues(PyAny);
-
 
 pyobject_native_type_core!(
     PyDictValues,
@@ -56,10 +52,8 @@ pyobject_native_type_core!(
 );
 
 /// Represents a Python `dict_items`.
-
 #[repr(transparent)]
 pub struct PyDictItems(PyAny);
-
 
 pyobject_native_type_core!(
     PyDictItems,
@@ -82,7 +76,6 @@ impl PyDict {
     ///
     /// Returns an error on invalid input. In the case of key collisions,
     /// this keeps the last entry seen.
-    
     pub fn from_sequence<'py>(seq: &Bound<'py, PyAny>) -> PyResult<Bound<'py, PyDict>> {
         let py = seq.py();
         let dict = Self::new(py);
