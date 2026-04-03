@@ -14,7 +14,7 @@ pub mod serializer;
 pub mod validator;
 
 use pyforge::prelude::*;
-use pyforge::types::{PyDict, PyFloat, PyInt, PyList, PyString};
+use pyforge::types::{PyBool, PyDict, PyFloat, PyInt, PyList, PyString};
 
 use crate::error::DjangoError;
 use crate::field_types::{DjangoFieldType, FieldDescriptor, FieldValue};
@@ -36,10 +36,28 @@ fn extract_model_fields<'py>(
     let list = PyList::empty(py);
     for desc in &descriptors {
         let dict = PyDict::new(py);
+        // BUG FIX: emit the Django type name string, not Rust Debug format
         dict.set_item("name", &desc.name)?;
-        dict.set_item("type", format!("{:?}", desc.field_type))?;
+        dict.set_item("type", desc.field_type.django_type_name())?;
         dict.set_item("nullable", desc.nullable)?;
         dict.set_item("has_default", desc.has_default)?;
+        // Emit constraints so serialize_fields/validate_fields can reconstruct the type
+        match &desc.field_type {
+            DjangoFieldType::CharField { max_length }
+            | DjangoFieldType::EmailField { max_length }
+            | DjangoFieldType::UrlField { max_length }
+            | DjangoFieldType::SlugField { max_length } => {
+                dict.set_item("max_length", *max_length)?;
+            }
+            DjangoFieldType::DecimalField { max_digits, decimal_places } => {
+                dict.set_item("max_digits", *max_digits)?;
+                dict.set_item("decimal_places", *decimal_places)?;
+            }
+            DjangoFieldType::BinaryField { max_length: Some(ml) } => {
+                dict.set_item("max_length", *ml)?;
+            }
+            _ => {}
+        }
         list.append(dict)?;
     }
     Ok(list)
@@ -231,7 +249,8 @@ fn json_value_to_pyobject<'py>(
 ) -> PyResult<Bound<'py, PyAny>> {
     match value {
         serde_json::Value::Null => Ok(py.None().into_bound(py)),
-        serde_json::Value::Bool(b) => Ok(PyInt::new(py, if *b { 1i32 } else { 0i32 }).into_any()),
+        // BUG FIX: was returning Python int(1)/int(0), must return True/False
+        serde_json::Value::Bool(b) => Ok(PyBool::new(py, *b).to_owned().into_any()),
         serde_json::Value::Number(n) => {
             if let Some(i) = n.as_i64() {
                 Ok(PyInt::new(py, i).into_any())

@@ -116,6 +116,21 @@ Author set to **Abdulwahed Mansour** across all crates.
 - [x] Honest reporting: small batches show 1.5-2x (bridge overhead), large batches 4-8x
 - [x] BENCHMARKS.md with full results and methodology
 
+### Pre-Publication Audit (COMPLETE)
+
+- [x] Deep bug hunt: 6 bugs found and fixed with regression tests
+  - Bool serialized as int(1)/int(0) instead of True/False
+  - valid_count arithmetic underflow when one entry produces multiple errors
+  - CharField max_length counted bytes instead of characters (broke multi-byte UTF-8)
+  - Rayon parallel validation produced non-deterministic error ordering
+  - extract_model_fields emitted Debug format instead of type name string
+  - Decimal digit counting algorithm fundamentally wrong (100 counted as 1 digit)
+- [x] 33 tests passing (8 new regression tests)
+- [x] Zero clippy warnings
+- [x] Competitive analysis: vs orjson, pydantic-core, django-ninja
+- [x] IMPROVEMENTS.md: 6 future improvements with technical approach documented
+- [x] COMPETITIVE_ANALYSIS.md: honest positioning document
+
 ### Phase 4: Publish
 
 - [ ] Security audit and dependency review

@@ -77,6 +77,33 @@ pub enum DjangoFieldType {
     SlugField { max_length: usize },
 }
 
+impl DjangoFieldType {
+    /// Returns the Django `get_internal_type()` name for this field type.
+    ///
+    /// Used when emitting field descriptors back to Python — must match the
+    /// strings that `extract_descriptor_list` parses on the way in.
+    pub fn django_type_name(&self) -> &'static str {
+        match self {
+            DjangoFieldType::CharField { .. } => "CharField",
+            DjangoFieldType::TextField => "TextField",
+            DjangoFieldType::IntegerField => "IntegerField",
+            DjangoFieldType::BigIntegerField => "BigIntegerField",
+            DjangoFieldType::FloatField => "FloatField",
+            DjangoFieldType::DecimalField { .. } => "DecimalField",
+            DjangoFieldType::BooleanField => "BooleanField",
+            DjangoFieldType::DateField => "DateField",
+            DjangoFieldType::TimeField => "TimeField",
+            DjangoFieldType::DateTimeField => "DateTimeField",
+            DjangoFieldType::UuidField => "UUIDField",
+            DjangoFieldType::JsonField => "JSONField",
+            DjangoFieldType::BinaryField { .. } => "BinaryField",
+            DjangoFieldType::EmailField { .. } => "EmailField",
+            DjangoFieldType::UrlField { .. } => "URLField",
+            DjangoFieldType::SlugField { .. } => "SlugField",
+        }
+    }
+}
+
 /// A concrete Rust value extracted from a Django model instance.
 ///
 /// This is the runtime representation of a field's value, used as input

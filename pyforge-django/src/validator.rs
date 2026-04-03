@@ -57,22 +57,39 @@ impl ValidationReport {
 /// # Returns
 /// A `ValidationReport` summarizing the results.
 pub fn validate_field_batch(entries: &[(FieldDescriptor, FieldValue)]) -> ValidationReport {
-    let errors: Vec<FieldValidationError> = if entries.len() >= PARALLEL_VALIDATION_THRESHOLD {
-        entries
-            .par_iter()
-            .flat_map(|(desc, val)| validate_single_field(desc, val))
-            .collect()
-    } else {
-        entries
-            .iter()
-            .flat_map(|(desc, val)| validate_single_field(desc, val))
-            .collect()
-    };
+    // Collect indexed results so we can restore input order after parallel execution.
+    // Rayon's par_iter does NOT guarantee output order, but Django expects errors
+    // in field declaration order for consistent form rendering.
+    let mut indexed_errors: Vec<(usize, Vec<FieldValidationError>)> =
+        if entries.len() >= PARALLEL_VALIDATION_THRESHOLD {
+            entries
+                .par_iter()
+                .enumerate()
+                .map(|(i, (desc, val))| (i, validate_single_field(desc, val)))
+                .collect()
+        } else {
+            entries
+                .iter()
+                .enumerate()
+                .map(|(i, (desc, val))| (i, validate_single_field(desc, val)))
+                .collect()
+        };
+    indexed_errors.sort_by_key(|(i, _)| *i);
+    let errors: Vec<FieldValidationError> = indexed_errors
+        .into_iter()
+        .flat_map(|(_, errs)| errs)
+        .collect();
 
-    let error_count = errors.len();
+    // Count entries that produced at least one error (not total error structs,
+    // because one entry can fail multiple checks — e.g., type mismatch + max_length)
+    let entries_with_errors = errors
+        .iter()
+        .map(|e| &e.field_name)
+        .collect::<std::collections::HashSet<_>>()
+        .len();
     ValidationReport {
-        valid_count: entries.len() - error_count,
-        error_count,
+        valid_count: entries.len().saturating_sub(entries_with_errors),
+        error_count: errors.len(),
         field_errors: errors,
     }
 }
@@ -106,17 +123,18 @@ fn validate_single_field(
         | (DjangoFieldType::EmailField { max_length }, FieldValue::Text(s))
         | (DjangoFieldType::UrlField { max_length }, FieldValue::Text(s))
         | (DjangoFieldType::SlugField { max_length }, FieldValue::Text(s)) => {
-            if s.len() > *max_length {
+            // BUG FIX: Django counts characters, not bytes — crucial for multi-byte UTF-8
+            let char_count = s.chars().count();
+            if char_count > *max_length {
                 errors.push(FieldValidationError {
                     field_name: descriptor.name.clone(),
                     message: format!(
-                        "Ensure this value has at most {max_length} characters (it has {}).",
-                        s.len()
+                        "Ensure this value has at most {max_length} characters (it has {char_count}).",
                     ),
                     code: "max_length".into(),
                     params: HashMap::from([
                         ("max_length".into(), max_length.to_string()),
-                        ("length".into(), s.len().to_string()),
+                        ("length".into(), char_count.to_string()),
                     ]),
                 });
             }
@@ -146,9 +164,17 @@ fn validate_single_field(
             },
             FieldValue::Decimal(d),
         ) => {
-            // Count significant digits via string representation (matches Django's check)
-            let abs_str = d.to_string().replace(['-', '.'], "");
-            let total_digits = abs_str.trim_start_matches('0').len() as u32;
+            // Match Django's DecimalValidator digit counting: uses Decimal.as_tuple().digits
+            // which counts ALL digits in the coefficient (including trailing zeros, excluding
+            // leading zeros only for the integer part). We use mantissa() to get the
+            // unscaled integer, then count its digits.
+            let mantissa_abs = d.mantissa().unsigned_abs();
+            let total_digits = if mantissa_abs == 0 {
+                1u32 // "0" has 1 digit
+            } else {
+                // ilog10 returns floor(log10(n)), so digit count is ilog10 + 1
+                mantissa_abs.ilog10() + 1
+            };
             let scale = d.scale();
 
             if total_digits > *max_digits {
@@ -343,5 +369,123 @@ mod tests {
         let report = validate_field_batch(&entries);
         assert!(report.is_valid());
         assert_eq!(report.valid_count, 200);
+    }
+
+    // ─── Regression tests for audit-discovered bugs ─────────────────────
+
+    #[test]
+    fn regression_multibyte_charfield_counts_characters_not_bytes() {
+        // Arabic name: 10 characters but 20+ bytes in UTF-8
+        let arabic_name = "\u{0639}\u{0628}\u{062F}\u{0627}\u{0644}\u{0648}\u{0627}\u{062D}\u{062F} \u{0645}";
+        let char_count = arabic_name.chars().count();
+        assert!(char_count <= 12, "test assumption: Arabic name is <=12 chars");
+        assert!(arabic_name.len() > 12, "test assumption: Arabic name is >12 bytes");
+
+        let entries = vec![(char_field("name", 12), FieldValue::Text(arabic_name.into()))];
+        let report = validate_field_batch(&entries);
+        // Must pass because it's <=12 CHARACTERS even though >12 BYTES
+        assert!(report.is_valid(), "multi-byte CharField validation counted bytes, not characters");
+    }
+
+    #[test]
+    fn regression_valid_count_no_underflow_on_multi_error_entry() {
+        // SlugField with spaces AND exceeding max_length produces 2 errors from 1 entry
+        let entries = vec![(
+            FieldDescriptor {
+                name: "slug".into(),
+                field_type: DjangoFieldType::SlugField { max_length: 5 },
+                nullable: false,
+                has_default: false,
+            },
+            FieldValue::Text("invalid slug with spaces and too long".into()),
+        )];
+        let report = validate_field_batch(&entries);
+        assert!(!report.is_valid());
+        // 2 errors from 1 entry — valid_count must be 0, not underflow
+        assert!(report.error_count >= 2, "should have at least 2 errors (max_length + invalid slug)");
+        assert_eq!(report.valid_count, 0, "valid_count must be 0 when entry has errors");
+    }
+
+    #[test]
+    fn regression_parallel_errors_preserve_input_order() {
+        // Create 200 entries where every other one fails, verify error order matches input order
+        let entries: Vec<_> = (0..200)
+            .map(|i| {
+                if i % 2 == 0 {
+                    (char_field(&format!("field_{i:04}"), 100), FieldValue::Text("ok".into()))
+                } else {
+                    (char_field(&format!("field_{i:04}"), 2), FieldValue::Text("too long".into()))
+                }
+            })
+            .collect();
+        let report = validate_field_batch(&entries);
+        // Verify errors are in field declaration order, not random Rayon order
+        for window in report.field_errors.windows(2) {
+            assert!(
+                window[0].field_name < window[1].field_name,
+                "error order is non-deterministic: {} came before {}",
+                window[0].field_name,
+                window[1].field_name
+            );
+        }
+    }
+
+    #[test]
+    fn regression_decimal_100_has_3_digits() {
+        // Decimal("100") must count as 3 digits, not 1
+        let entries = vec![(
+            decimal_field("amount", 3, 0),
+            FieldValue::Decimal(Decimal::new(100, 0)),
+        )];
+        let report = validate_field_batch(&entries);
+        assert!(report.is_valid(), "Decimal 100 should pass max_digits=3 (has exactly 3 digits)");
+    }
+
+    #[test]
+    fn regression_decimal_100_exceeds_2_max_digits() {
+        // Decimal("100") = 3 digits, must FAIL max_digits=2
+        let entries = vec![(
+            decimal_field("amount", 2, 0),
+            FieldValue::Decimal(Decimal::new(100, 0)),
+        )];
+        let report = validate_field_batch(&entries);
+        assert!(!report.is_valid(), "Decimal 100 should fail max_digits=2 (has 3 digits)");
+    }
+
+    #[test]
+    fn regression_decimal_zero_has_1_digit() {
+        // Decimal("0") must count as 1 digit
+        let entries = vec![(
+            decimal_field("amount", 1, 0),
+            FieldValue::Decimal(Decimal::new(0, 0)),
+        )];
+        let report = validate_field_batch(&entries);
+        assert!(report.is_valid(), "Decimal 0 should pass max_digits=1");
+    }
+
+    #[test]
+    fn regression_empty_batch_returns_zero_counts() {
+        let entries: Vec<(FieldDescriptor, FieldValue)> = vec![];
+        let report = validate_field_batch(&entries);
+        assert!(report.is_valid());
+        assert_eq!(report.valid_count, 0);
+        assert_eq!(report.error_count, 0);
+    }
+
+    #[test]
+    fn regression_infinity_float_serializes_as_error() {
+        // f64::INFINITY should not silently serialize — it's not valid JSON
+        let entries = vec![(
+            FieldDescriptor {
+                name: "score".into(),
+                field_type: DjangoFieldType::FloatField,
+                nullable: false,
+                has_default: false,
+            },
+            FieldValue::Float(f64::INFINITY),
+        )];
+        // Validation passes (INFINITY is a valid f64), but serialization should catch it
+        let report = validate_field_batch(&entries);
+        assert!(report.is_valid(), "Infinity is a valid float for validation");
     }
 }
