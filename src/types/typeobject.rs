@@ -11,7 +11,7 @@ use super::PyString;
 
 /// Represents a reference to a Python `type` object.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyType>`][crate::Py] or [`Bound<'py, PyType>`][Bound].
 ///
 /// For APIs available on `type` objects, see the [`PyTypeMethods`] trait which is implemented for

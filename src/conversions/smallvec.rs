@@ -13,8 +13,8 @@
 #![doc = concat!("pyo3 = { version = \"", env!("CARGO_PKG_VERSION"),  "\", features = [\"smallvec\"] }")]
 //! ```
 //!
-//! Note that you must use compatible versions of smallvec and PyO3.
-//! The required smallvec version may vary based on the version of PyO3.
+//! Note that you must use compatible versions of smallvec and PyForge.
+//! The required smallvec version may vary based on the version of PyForge.
 use crate::conversion::{FromPyObjectOwned, IntoPyObject};
 use crate::exceptions::PyTypeError;
 #[cfg(feature = "experimental-inspect")]

@@ -8,7 +8,7 @@ pub struct PyMutex {
     pub(crate) _bits: AtomicU8,
 }
 
-// we don't impl Default because PyO3's safe wrappers don't need it
+// we don't impl Default because PyForge's safe wrappers don't need it
 #[allow(clippy::new_without_default)]
 impl PyMutex {
     pub const fn new() -> PyMutex {

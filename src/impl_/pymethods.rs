@@ -351,7 +351,7 @@ where
     T: PyClass,
 {
     // It is important the implementation of `__traverse__` cannot safely access the interpreter,
-    // c.f. https://github.com/PyO3/pyo3/issues/3165, and hence we do not expose our Python
+    // c.f. https://github.com/PyForge/pyo3/issues/3165, and hence we do not expose our Python
     // token to the user code and forbid safe methods for attaching.
     // (This includes enforcing the `&self` method receiver as e.g. `PyRef<Self>` could
     // reconstruct a Python token via `PyRef::py`.)
@@ -410,7 +410,7 @@ where
 /// - if the base type is known in this module, can potentially look it up directly in module state
 ///   (when we have it)
 /// - if the base type is a Python builtin, can jut call the C function directly
-/// - if the base type is a PyO3 type defined in the same module, can potentially do similar to
+/// - if the base type is a PyForge type defined in the same module, can potentially do similar to
 ///   tp_alloc where we solve this at compile time
 unsafe fn call_super_traverse(
     obj: *mut ffi::PyObject,
@@ -482,7 +482,7 @@ pub unsafe fn _call_clear(
 /// - if the base type is known in this module, can potentially look it up directly in module state
 ///   (when we have it)
 /// - if the base type is a Python builtin, can jut call the C function directly
-/// - if the base type is a PyO3 type defined in the same module, can potentially do similar to
+/// - if the base type is a PyForge type defined in the same module, can potentially do similar to
 ///   tp_alloc where we solve this at compile time
 unsafe fn call_super_clear(
     py: Python<'_>,

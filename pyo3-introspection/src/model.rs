@@ -99,7 +99,7 @@ pub enum Expr {
     Subscript { value: Box<Self>, slice: Box<Self> },
 }
 
-/// A PyO3 extension to the Python AST to know more about [`Expr::Constant`].
+/// A PyForge extension to the Python AST to know more about [`Expr::Constant`].
 ///
 /// This enables advanced features like escaping.
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]

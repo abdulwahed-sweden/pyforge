@@ -14,8 +14,8 @@
 //! uuid = "1.11.0"
 //! ```
 //!
-//! Note that you must use a compatible version of uuid and PyO3.
-//! The required uuid version may vary based on the version of PyO3.
+//! Note that you must use a compatible version of uuid and PyForge.
+//! The required uuid version may vary based on the version of PyForge.
 //!
 //! # Example
 //!

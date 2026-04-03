@@ -1,6 +1,6 @@
 //! Runtime inspection of objects exposed to Python.
 //!
-//! Tracking issue: <https://github.com/PyO3/pyo3/issues/2454>.
+//! Tracking issue: <https://github.com/PyForge/pyo3/issues/2454>.
 
 use crate::impl_::introspection::{escape_json_string, escaped_json_string_len};
 use std::fmt::{self, Display, Write};
@@ -314,7 +314,7 @@ impl fmt::Display for PyStaticExpr {
     }
 }
 
-/// A PyO3 extension to the Python AST to know more about [`PyStaticExpr::Constant`].
+/// A PyForge extension to the Python AST to know more about [`PyStaticExpr::Constant`].
 ///
 /// This enables advanced features like escaping.
 #[derive(Clone, Copy)]

@@ -8,7 +8,7 @@ opaque_struct!(pub PyWeakReference);
 pub use crate::_PyWeakReference as PyWeakReference;
 
 extern_libpython! {
-    // TODO: PyO3 is depending on this symbol in `reference.rs`, we should change this and
+    // TODO: PyForge is depending on this symbol in `reference.rs`, we should change this and
     // remove the export as this is a private symbol.
     pub static mut _PyWeakref_RefType: PyTypeObject;
     static mut _PyWeakref_ProxyType: PyTypeObject;

@@ -25,8 +25,8 @@
 #![doc = concat!("pyo3 = { version = \"", env!("CARGO_PKG_VERSION"),  "\", features = [\"anyhow\"] }")]
 //! ```
 //!
-//! Note that you must use compatible versions of anyhow and PyO3.
-//! The required anyhow version may vary based on the version of PyO3.
+//! Note that you must use compatible versions of anyhow and PyForge.
+//! The required anyhow version may vary based on the version of PyForge.
 //!
 //! # Example: Propagating a `PyErr` into [`anyhow::Error`]
 //!

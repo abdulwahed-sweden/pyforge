@@ -27,8 +27,8 @@
 #![doc = concat!("pyo3 = { version = \"", env!("CARGO_PKG_VERSION"),  "\", features = [\"eyre\"] }")]
 //! ```
 //!
-//! Note that you must use compatible versions of eyre and PyO3.
-//! The required eyre version may vary based on the version of PyO3.
+//! Note that you must use compatible versions of eyre and PyForge.
+//! The required eyre version may vary based on the version of PyForge.
 //!
 //! # Example: Propagating a `PyErr` into [`eyre::Report`]
 //!

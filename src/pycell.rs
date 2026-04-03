@@ -1,17 +1,17 @@
-//! PyO3's interior mutability primitive.
+//! PyForge's interior mutability primitive.
 //!
 //! Rust has strict aliasing rules - you can either have any number of immutable (shared) references or one mutable
 //! reference. Python's ownership model is the complete opposite of that - any Python object
 //! can be referenced any number of times, and mutation is allowed from any reference.
 //!
-//! PyO3 deals with these differences by employing the [Interior Mutability]
-//! pattern. This requires that PyO3 enforces the borrowing rules and it has two mechanisms for
+//! PyForge deals with these differences by employing the [Interior Mutability]
+//! pattern. This requires that PyForge enforces the borrowing rules and it has two mechanisms for
 //! doing so:
 //! - Statically it can enforce thread-safe access with the [`Python<'py>`](crate::Python) token.
 //!   All Rust code holding that token, or anything derived from it, can assume that they have
 //!   safe access to the Python interpreter's state. For this reason all the native Python objects
 //!   can be mutated through shared references.
-//! - However, methods and functions in Rust usually *do* need `&mut` references. While PyO3 can
+//! - However, methods and functions in Rust usually *do* need `&mut` references. While PyForge can
 //!   use the [`Python<'py>`](crate::Python) token to guarantee thread-safe access to them, it cannot
 //!   statically guarantee uniqueness of `&mut` references. As such those references have to be tracked
 //!   dynamically at runtime, using `PyCell` and the other types defined in this module. This works
@@ -190,7 +190,7 @@
 //! ```
 //! See the [guide] for more information.
 //!
-//! [guide]: https://pyo3.rs/latest/class.html#pycell-and-interior-mutability "PyCell and interior mutability"
+//! [guide]: https://github.com/abdulwahed-sweden/pyforge/latest/class.html#pycell-and-interior-mutability "PyCell and interior mutability"
 //! [Interior Mutability]: https://doc.rust-lang.org/book/ch15-05-interior-mutability.html "RefCell<T> and the Interior Mutability Pattern - The Rust Programming Language"
 
 use crate::conversion::IntoPyObject;

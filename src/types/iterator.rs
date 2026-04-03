@@ -8,7 +8,7 @@ use crate::{ffi, Bound, Py, PyAny, PyErr, PyResult};
 
 /// A Python iterator object.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyIterator>`][crate::Py] or [`Bound<'py, PyIterator>`][Bound].
 ///
 /// # Examples

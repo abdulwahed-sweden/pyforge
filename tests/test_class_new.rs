@@ -151,7 +151,7 @@ impl SuperClass {
 }
 
 /// Checks that `subclass.__new__` works correctly.
-/// See https://github.com/PyO3/pyo3/issues/947 for the corresponding bug.
+/// See https://github.com/PyForge/pyo3/issues/947 for the corresponding bug.
 #[test]
 fn subclass_new() {
     Python::attach(|py| {

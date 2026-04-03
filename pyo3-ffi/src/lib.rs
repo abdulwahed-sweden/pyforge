@@ -1,10 +1,10 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 //! Raw FFI declarations for Python's C API.
 //!
-//! PyO3 can be used to write native Python modules or run Python code and modules from Rust.
+//! PyForge can be used to write native Python modules or run Python code and modules from Rust.
 //!
 //! This crate just provides low level bindings to the Python interpreter.
-//! It is meant for advanced users only - regular PyO3 users shouldn't
+//! It is meant for advanced users only - regular PyForge users shouldn't
 //! need to interact with this crate at all.
 //!
 //! The contents of this crate are not documented here, as it would entail
@@ -25,19 +25,19 @@
 //!
 //! # Feature flags
 //!
-//! PyO3 uses [feature flags] to enable you to opt-in to additional functionality. For a detailed
+//! PyForge uses [feature flags] to enable you to opt-in to additional functionality. For a detailed
 //! description, see the [Features chapter of the guide].
 //!
 //! ## Optional feature flags
 //!
-//! The following features customize PyO3's behavior:
+//! The following features customize PyForge's behavior:
 //!
-//! - `abi3`: Restricts PyO3's API to a subset of the full Python API which is guaranteed by
+//! - `abi3`: Restricts PyForge's API to a subset of the full Python API which is guaranteed by
 //! [PEP 384] to be forward-compatible with future Python versions.
 //!
 //! ## `rustc` environment flags
 //!
-//! PyO3 uses `rustc`'s `--cfg` flags to enable or disable code used for different Python versions.
+//! PyForge uses `rustc`'s `--cfg` flags to enable or disable code used for different Python versions.
 //! If you want to do this for your own crate, you can do so with the [`pyforge-build-config`] crate.
 //!
 //! - `Py_3_8`, `Py_3_9`, `Py_3_10`, `Py_3_11`, `Py_3_12`, `Py_3_13`, `Py_3_14`: Marks code that is
@@ -81,7 +81,7 @@
 //!
 //! # Example: Building Python Native modules
 //!
-//! PyO3 can be used to generate a native Python module. The easiest way to try this out for the
+//! PyForge can be used to generate a native Python module. The easiest way to try this out for the
 //! first time is to use [`maturin`]. `maturin` is a tool for building and publishing Rust-based
 //! Python packages with minimal configuration. The following steps set up some files for an example
 //! Python module, install `maturin`, and then show how to build and import the Python module.
@@ -217,7 +217,7 @@
 //! }
 //!
 //! /// A helper to parse function arguments
-//! /// If we used PyO3's proc macros they'd handle all of this boilerplate for us :)
+//! /// If we used PyForge's proc macros they'd handle all of this boilerplate for us :)
 //! unsafe fn parse_arg_as_i32(obj: *mut PyObject, n_arg: usize) -> Option<i32> {
 //!     if PyLong_Check(obj) == 0 {
 //!         let msg = format!(
@@ -352,13 +352,13 @@
 //! [tutorials]: https://docs.python.org/3/extending/
 //! [`orjson`]: https://github.com/ijl/orjson
 //! [capi]: https://docs.python.org/3/c-api/index.html
-//! [`maturin`]: https://github.com/PyO3/maturin "Build and publish crates with pyo3, rust-cpython and cffi bindings as well as rust binaries as python packages"
+//! [`maturin`]: https://github.com/PyForge/maturin "Build and publish crates with pyo3, rust-cpython and cffi bindings as well as rust binaries as python packages"
 //! [`pyforge-build-config`]: https://docs.rs/pyforge-build-config
 //! [feature flags]: https://doc.rust-lang.org/cargo/reference/features.html "Features - The Cargo Book"
-#![doc = concat!("[manual_builds]: https://pyo3.rs/v", env!("CARGO_PKG_VERSION"), "/building-and-distribution.html#manual-builds \"Manual builds - Building and Distribution - PyO3 user guide\"")]
-//! [setuptools-rust]: https://github.com/PyO3/setuptools-rust "Setuptools plugin for Rust extensions"
+#![doc = concat!("[manual_builds]: https://github.com/abdulwahed-sweden/pyforge/v", env!("CARGO_PKG_VERSION"), "/building-and-distribution.html#manual-builds \"Manual builds - Building and Distribution - PyForge user guide\"")]
+//! [setuptools-rust]: https://github.com/PyForge/setuptools-rust "Setuptools plugin for Rust extensions"
 //! [PEP 384]: https://www.python.org/dev/peps/pep-0384 "PEP 384 -- Defining a Stable ABI"
-#![doc = concat!("[Features chapter of the guide]: https://pyo3.rs/v", env!("CARGO_PKG_VERSION"), "/features.html#features-reference \"Features reference - PyO3 user guide\"")]
+#![doc = concat!("[Features chapter of the guide]: https://github.com/abdulwahed-sweden/pyforge/v", env!("CARGO_PKG_VERSION"), "/features.html#features-reference \"Features reference - PyForge user guide\"")]
 #![allow(
     missing_docs,
     non_camel_case_types,
@@ -388,11 +388,11 @@ macro_rules! opaque_struct {
 
 /// This is a helper macro to create a `&'static CStr`.
 ///
-/// It can be used on all Rust versions supported by PyO3, unlike c"" literals which
+/// It can be used on all Rust versions supported by PyForge, unlike c"" literals which
 /// were stabilised in Rust 1.77.
 ///
-/// Due to the nature of PyO3 making heavy use of C FFI interop with Python, it is
-/// common for PyO3 to use CStr.
+/// Due to the nature of PyForge making heavy use of C FFI interop with Python, it is
+/// common for PyForge to use CStr.
 ///
 /// Examples:
 ///

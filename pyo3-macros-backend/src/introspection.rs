@@ -1,6 +1,6 @@
 //! Generates introspection data i.e. JSON strings in the .pyo3i0 section.
 //!
-//! There is a JSON per PyO3 proc macro (pyclass, pymodule, pyfunction...).
+//! There is a JSON per PyForge proc macro (pyclass, pymodule, pyfunction...).
 //!
 //! These JSON blobs can refer to each others via the _PYO3_INTROSPECTION_ID constants
 //! providing unique ids for each element.
@@ -11,7 +11,7 @@
 use crate::method::{FnArg, RegularArg};
 use crate::py_expr::PyExpr;
 use crate::pyfunction::FunctionSignature;
-use crate::utils::{PyO3CratePath, PythonDoc, StrOrExpr};
+use crate::utils::{PyForgeCratePath, PythonDoc, StrOrExpr};
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use std::borrow::Cow;
@@ -26,7 +26,7 @@ use syn::{Attribute, Ident, ReturnType, Type, TypePath};
 static GLOBAL_COUNTER_FOR_UNIQUE_NAMES: AtomicUsize = AtomicUsize::new(0);
 
 pub fn module_introspection_code<'a>(
-    pyo3_crate_path: &PyO3CratePath,
+    pyo3_crate_path: &PyForgeCratePath,
     name: &str,
     members: impl IntoIterator<Item = &'a Ident>,
     members_cfg_attrs: impl IntoIterator<Item = &'a Vec<Attribute>>,
@@ -59,7 +59,7 @@ pub fn module_introspection_code<'a>(
 }
 
 pub fn class_introspection_code(
-    pyo3_crate_path: &PyO3CratePath,
+    pyo3_crate_path: &PyForgeCratePath,
     ident: &Ident,
     name: &str,
     extends: Option<PyExpr>,
@@ -98,7 +98,7 @@ pub fn class_introspection_code(
 
 #[expect(clippy::too_many_arguments)]
 pub fn function_introspection_code(
-    pyo3_crate_path: &PyO3CratePath,
+    pyo3_crate_path: &PyForgeCratePath,
     ident: Option<&Ident>,
     name: &str,
     signature: &FunctionSignature<'_>,
@@ -165,7 +165,7 @@ pub fn function_introspection_code(
 }
 
 pub fn attribute_introspection_code(
-    pyo3_crate_path: &PyO3CratePath,
+    pyo3_crate_path: &PyForgeCratePath,
     parent: Option<&Type>,
     name: String,
     value: PyExpr,
@@ -358,7 +358,7 @@ enum IntrospectionNode<'a> {
 }
 
 impl IntrospectionNode<'_> {
-    fn emit(self, pyo3_crate_path: &PyO3CratePath) -> TokenStream {
+    fn emit(self, pyo3_crate_path: &PyForgeCratePath) -> TokenStream {
         let mut content = ConcatenationBuilder::default();
         self.add_to_serialization(&mut content, pyo3_crate_path);
         content.into_static(
@@ -370,7 +370,7 @@ impl IntrospectionNode<'_> {
     fn add_to_serialization(
         self,
         content: &mut ConcatenationBuilder,
-        pyo3_crate_path: &PyO3CratePath,
+        pyo3_crate_path: &PyForgeCratePath,
     ) {
         match self {
             Self::String(string) => {
@@ -456,7 +456,7 @@ impl From<PyExpr> for IntrospectionNode<'static> {
     }
 }
 
-fn serialize_type_hint(hint: TokenStream, pyo3_crate_path: &PyO3CratePath) -> TokenStream {
+fn serialize_type_hint(hint: TokenStream, pyo3_crate_path: &PyForgeCratePath) -> TokenStream {
     quote! {{
         const TYPE_HINT: #pyo3_crate_path::inspect::PyStaticExpr = #hint;
         const TYPE_HINT_LEN: usize = #pyo3_crate_path::inspect::serialized_len_for_introspection(&TYPE_HINT);
@@ -528,7 +528,7 @@ impl ConcatenationBuilder {
         self.current_string.push('"');
     }
 
-    pub fn into_token_stream(self, pyo3_crate_path: &PyO3CratePath) -> TokenStream {
+    pub fn into_token_stream(self, pyo3_crate_path: &PyForgeCratePath) -> TokenStream {
         let mut elements = self.elements;
         if !self.current_string.is_empty() {
             elements.push(ConcatenationBuilderElement::String(self.current_string));
@@ -549,7 +549,7 @@ impl ConcatenationBuilder {
         }
     }
 
-    fn into_static(self, pyo3_crate_path: &PyO3CratePath, ident: Ident) -> TokenStream {
+    fn into_static(self, pyo3_crate_path: &PyForgeCratePath, ident: Ident) -> TokenStream {
         let mut elements = self.elements;
         if !self.current_string.is_empty() {
             elements.push(ConcatenationBuilderElement::String(self.current_string));

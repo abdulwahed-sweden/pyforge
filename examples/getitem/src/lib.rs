@@ -77,7 +77,7 @@ impl ExampleContainer {
 
 #[pymodule(name = "getitem")]
 fn example(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    // ? -https://github.com/PyO3/maturin/issues/475
+    // ? -https://github.com/PyForge/maturin/issues/475
     m.add_class::<ExampleContainer>()?;
     Ok(())
 }

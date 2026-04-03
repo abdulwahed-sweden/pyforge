@@ -24,7 +24,7 @@ pub use crate::cpython::object::PyTypeObject;
     not(Py_GIL_DISABLED),
     target_endian = "big"
 ))]
-/// This struct is anonymous in CPython, so the name was given by PyO3 because
+/// This struct is anonymous in CPython, so the name was given by PyForge because
 /// Rust structs need a name.
 pub struct PyObjectObFlagsAndRefcnt {
     pub ob_flags: u16,
@@ -40,7 +40,7 @@ pub struct PyObjectObFlagsAndRefcnt {
     not(Py_GIL_DISABLED),
     target_endian = "little"
 ))]
-/// This struct is anonymous in CPython, so the name was given by PyO3 because
+/// This struct is anonymous in CPython, so the name was given by PyForge because
 /// Rust structs need a name.
 pub struct PyObjectObFlagsAndRefcnt {
     pub ob_refcnt: u32,
@@ -58,7 +58,7 @@ struct Aligner(c_char);
 #[repr(C)]
 #[derive(Copy, Clone)]
 #[cfg(all(Py_3_12, not(Py_GIL_DISABLED)))]
-/// This union is anonymous in CPython, so the name was given by PyO3 because
+/// This union is anonymous in CPython, so the name was given by PyForge because
 /// Rust union need a name.
 pub union PyObjectObRefcnt {
     #[cfg(all(target_pointer_width = "64", Py_3_14))]

@@ -1,9 +1,9 @@
-//! Configuration used by PyO3 for conditional support of varying Python versions.
+//! Configuration used by PyForge for conditional support of varying Python versions.
 //!
 //! This crate exposes functionality to be called from build scripts to simplify building crates
-//! which depend on PyO3.
+//! which depend on PyForge.
 //!
-//! It used internally by the PyO3 crate's build script to apply the same configuration.
+//! It used internally by the PyForge crate's build script to apply the same configuration.
 
 #![warn(elided_lifetimes_in_paths, unused_lifetimes)]
 
@@ -33,12 +33,12 @@ use target_lexicon::OperatingSystem;
 ///
 /// | Flag | Description |
 /// | ---- | ----------- |
-/// | `#[cfg(Py_3_8)]`, `#[cfg(Py_3_9)]`, `#[cfg(Py_3_10)]`, `#[cfg(Py_3_11)]`, ... | These attributes mark code only for a given Python version and up. For example, `#[cfg(Py_3_8)]` marks code which can run on Python 3.8 **and newer**. There is one attribute for each Python version currently supported by PyO3. |
-/// | `#[cfg(Py_LIMITED_API)]` | This marks code which is run when compiling with PyO3's `abi3` feature enabled. |
+/// | `#[cfg(Py_3_8)]`, `#[cfg(Py_3_9)]`, `#[cfg(Py_3_10)]`, `#[cfg(Py_3_11)]`, ... | These attributes mark code only for a given Python version and up. For example, `#[cfg(Py_3_8)]` marks code which can run on Python 3.8 **and newer**. There is one attribute for each Python version currently supported by PyForge. |
+/// | `#[cfg(Py_LIMITED_API)]` | This marks code which is run when compiling with PyForge's `abi3` feature enabled. |
 /// | `#[cfg(Py_GIL_DISABLED)]` | This marks code which is run on the free-threaded interpreter. |
 ///
 /// For examples of how to use these attributes,
-#[doc = concat!("[see PyO3's guide](https://pyo3.rs/v", env!("CARGO_PKG_VERSION"), "/building-and-distribution/multiple_python_versions.html)")]
+#[doc = concat!("[see PyForge's guide](https://github.com/abdulwahed-sweden/pyforge/v", env!("CARGO_PKG_VERSION"), "/building-and-distribution/multiple_python_versions.html)")]
 /// .
 #[cfg(feature = "resolve-config")]
 pub fn use_pyo3_cfgs() {
@@ -84,7 +84,7 @@ fn _add_extension_module_link_args(
 
 /// Adds linker arguments to set rpath when embedding Python within a Rust binary.
 ///
-/// When running tests or binaries built with PyO3, the Python dynamic library needs
+/// When running tests or binaries built with PyForge, the Python dynamic library needs
 /// to be found at runtime.
 ///
 /// This can be done by setting environment variables like `DYLD_LIBRARY_PATH` on macOS,
@@ -95,7 +95,7 @@ fn _add_extension_module_link_args(
 /// variables, so can be convenient, however may not be appropriate for binaries packaged
 /// for distribution.
 ///
-#[doc = concat!("[See PyO3's guide](https://pyo3.rs/v", env!("CARGO_PKG_VERSION"), "/building-and-distribution#dynamically-embedding-the-python-interpreter)")]
+#[doc = concat!("[See PyForge's guide](https://github.com/abdulwahed-sweden/pyforge/v", env!("CARGO_PKG_VERSION"), "/building-and-distribution#dynamically-embedding-the-python-interpreter)")]
 /// for more details.
 #[cfg(feature = "resolve-config")]
 pub fn add_libpython_rpath_link_args() {
@@ -180,7 +180,7 @@ pub fn get() -> &'static InterpreterConfig {
         } else {
             InterpreterConfig::from_reader(Cursor::new(HOST_CONFIG))
         }
-        .expect("failed to parse PyO3 config")
+        .expect("failed to parse PyForge config")
     })
 }
 
@@ -209,7 +209,7 @@ fn config_from_pyo3_config_file_env() -> Option<InterpreterConfig> {
 #[cfg(feature = "resolve-config")]
 const HOST_CONFIG: &str = include_str!(concat!(env!("OUT_DIR"), "/pyo3-build-config.txt"));
 
-/// Returns the path where PyO3's build.rs writes its cross compile configuration.
+/// Returns the path where PyForge's build.rs writes its cross compile configuration.
 ///
 /// The config file will be named `$OUT_DIR/<triple>/pyo3-build-config.txt`.
 ///
@@ -290,7 +290,7 @@ pub fn print_expected_cfgs() {
     println!("cargo:rustc-check-cfg=cfg(pyo3_dll, values({values}))");
 }
 
-/// Private exports used in PyO3's build.rs
+/// Private exports used in PyForge's build.rs
 ///
 /// Please don't use these - they could change at any time.
 #[doc(hidden)]
@@ -374,7 +374,7 @@ pub mod pyo3_build_script_impl {
     }
 
     /// Helper to generate an error message when the configured Python version is newer
-    /// than PyO3's current supported version.
+    /// than PyForge's current supported version.
     pub struct MaximumVersionExceeded {
         message: String,
     }
@@ -391,10 +391,10 @@ pub mod pyo3_build_script_impl {
             };
             let version = &interpreter_config.version;
             let message = format!(
-                "the configured {implementation} version ({version}) is newer than PyO3's maximum supported version ({supported_version})\n\
-                = help: this package is being built with PyO3 version {current_version}\n\
-                = help: check https://crates.io/crates/pyo3 for the latest PyO3 version available\n\
-                = help: updating this package to the latest version of PyO3 may provide compatibility with this {implementation} version",
+                "the configured {implementation} version ({version}) is newer than PyForge's maximum supported version ({supported_version})\n\
+                = help: this package is being built with PyForge version {current_version}\n\
+                = help: check https://crates.io/crates/pyo3 for the latest PyForge version available\n\
+                = help: updating this package to the latest version of PyForge may provide compatibility with this {implementation} version",
                 current_version = env!("CARGO_PKG_VERSION")
             );
             Self { message }
@@ -547,10 +547,10 @@ mod tests {
         error.add_help("this is a help message");
         let error = error.finish();
         let expected = concat!("\
-            the configured Python version (3.13) is newer than PyO3's maximum supported version (3.12)\n\
-            = help: this package is being built with PyO3 version ", env!("CARGO_PKG_VERSION"), "\n\
-            = help: check https://crates.io/crates/pyo3 for the latest PyO3 version available\n\
-            = help: updating this package to the latest version of PyO3 may provide compatibility with this Python version\n\
+            the configured Python version (3.13) is newer than PyForge's maximum supported version (3.12)\n\
+            = help: this package is being built with PyForge version ", env!("CARGO_PKG_VERSION"), "\n\
+            = help: check https://crates.io/crates/pyo3 for the latest PyForge version available\n\
+            = help: updating this package to the latest version of PyForge may provide compatibility with this Python version\n\
             = help: this is a help message"
         );
         assert_eq!(error, expected);

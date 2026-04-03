@@ -13,7 +13,7 @@ use crate::{
     },
     combine_errors::CombineErrors,
     get_doc,
-    pyclass::PyClassPyO3Option,
+    pyclass::PyClassPyForgeOption,
     pyfunction::{impl_wrap_pyfunction, PyFunctionOptions},
     utils::{has_attribute, has_attribute_with_namespace, Ctx, IdentOrStr, PythonDoc},
 };
@@ -45,7 +45,7 @@ impl Parse for PyModuleOptions {
         let mut options: PyModuleOptions = Default::default();
 
         options.add_attributes(
-            Punctuated::<PyModulePyO3Option, syn::Token![,]>::parse_terminated(input)?,
+            Punctuated::<PyModulePyForgeOption, syn::Token![,]>::parse_terminated(input)?,
         )?;
 
         Ok(options)
@@ -59,7 +59,7 @@ impl PyModuleOptions {
 
     fn add_attributes(
         &mut self,
-        attrs: impl IntoIterator<Item = PyModulePyO3Option>,
+        attrs: impl IntoIterator<Item = PyModulePyForgeOption>,
     ) -> Result<()> {
         macro_rules! set_option {
             ($key:ident $(, $extra:literal)?) => {
@@ -76,14 +76,14 @@ impl PyModuleOptions {
             .into_iter()
             .map(|attr| {
                 match attr {
-                    PyModulePyO3Option::Crate(krate) => set_option!(krate),
-                    PyModulePyO3Option::Name(name) => set_option!(name),
-                    PyModulePyO3Option::Module(module) => set_option!(module),
-                    PyModulePyO3Option::Submodule(submodule) => set_option!(
+                    PyModulePyForgeOption::Crate(krate) => set_option!(krate),
+                    PyModulePyForgeOption::Name(name) => set_option!(name),
+                    PyModulePyForgeOption::Module(module) => set_option!(module),
+                    PyModulePyForgeOption::Submodule(submodule) => set_option!(
                         submodule,
                         " (it is implicitly always specified for nested modules)"
                     ),
-                    PyModulePyO3Option::GILUsed(gil_used) => {
+                    PyModulePyForgeOption::GILUsed(gil_used) => {
                         set_option!(gil_used)
                     }
                 }
@@ -232,10 +232,10 @@ pub fn pymodule_module_impl(
                 {
                     module_items.push(item_struct.ident.clone());
                     module_items_cfg_attrs.push(get_cfg_attributes(&item_struct.attrs));
-                    if !has_pyo3_module_declared::<PyClassPyO3Option>(
+                    if !has_pyo3_module_declared::<PyClassPyForgeOption>(
                         &item_struct.attrs,
                         "pyclass",
-                        |option| matches!(option, PyClassPyO3Option::Module(_)),
+                        |option| matches!(option, PyClassPyForgeOption::Module(_)),
                     )? {
                         set_module_attribute(&mut item_struct.attrs, &full_name);
                     }
@@ -256,10 +256,10 @@ pub fn pymodule_module_impl(
                 {
                     module_items.push(item_enum.ident.clone());
                     module_items_cfg_attrs.push(get_cfg_attributes(&item_enum.attrs));
-                    if !has_pyo3_module_declared::<PyClassPyO3Option>(
+                    if !has_pyo3_module_declared::<PyClassPyForgeOption>(
                         &item_enum.attrs,
                         "pyclass",
-                        |option| matches!(option, PyClassPyO3Option::Module(_)),
+                        |option| matches!(option, PyClassPyForgeOption::Module(_)),
                     )? {
                         set_module_attribute(&mut item_enum.attrs, &full_name);
                     }
@@ -280,10 +280,10 @@ pub fn pymodule_module_impl(
                 {
                     module_items.push(item_mod.ident.clone());
                     module_items_cfg_attrs.push(get_cfg_attributes(&item_mod.attrs));
-                    if !has_pyo3_module_declared::<PyModulePyO3Option>(
+                    if !has_pyo3_module_declared::<PyModulePyForgeOption>(
                         &item_mod.attrs,
                         "pymodule",
-                        |option| matches!(option, PyModulePyO3Option::Module(_)),
+                        |option| matches!(option, PyModulePyForgeOption::Module(_)),
                     )? {
                         set_module_attribute(&mut item_mod.attrs, &full_name);
                     }
@@ -599,7 +599,7 @@ fn process_functions_in_module(options: &PyModuleOptions, func: &mut syn::ItemFn
                     {
                         use #pyo3_path::types::PyModuleMethods;
                         #module_name.add_function(#pyo3_path::wrap_pyfunction!(#name, #module_name.as_borrowed())?)?;
-                        #[deprecated(note = "`pyfn` will be removed in a future PyO3 version, use declarative `#[pymodule]` with `mod` instead")]
+                        #[deprecated(note = "`pyfn` will be removed in a future PyForge version, use declarative `#[pymodule]` with `mod` instead")]
                         #[allow(dead_code)]
                         const PYFN_ATTRIBUTE: () = ();
                         const _: () = PYFN_ATTRIBUTE;
@@ -721,7 +721,7 @@ fn has_pyo3_module_declared<T: Parse>(
     Ok(false)
 }
 
-enum PyModulePyO3Option {
+enum PyModulePyForgeOption {
     Submodule(SubmoduleAttribute),
     Crate(CrateAttribute),
     Name(NameAttribute),
@@ -729,19 +729,19 @@ enum PyModulePyO3Option {
     GILUsed(GILUsedAttribute),
 }
 
-impl Parse for PyModulePyO3Option {
+impl Parse for PyModulePyForgeOption {
     fn parse(input: ParseStream<'_>) -> Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(attributes::kw::name) {
-            input.parse().map(PyModulePyO3Option::Name)
+            input.parse().map(PyModulePyForgeOption::Name)
         } else if lookahead.peek(syn::Token![crate]) {
-            input.parse().map(PyModulePyO3Option::Crate)
+            input.parse().map(PyModulePyForgeOption::Crate)
         } else if lookahead.peek(attributes::kw::module) {
-            input.parse().map(PyModulePyO3Option::Module)
+            input.parse().map(PyModulePyForgeOption::Module)
         } else if lookahead.peek(attributes::kw::submodule) {
-            input.parse().map(PyModulePyO3Option::Submodule)
+            input.parse().map(PyModulePyForgeOption::Submodule)
         } else if lookahead.peek(attributes::kw::gil_used) {
-            input.parse().map(PyModulePyO3Option::GILUsed)
+            input.parse().map(PyModulePyForgeOption::GILUsed)
         } else {
             Err(lookahead.error())
         }

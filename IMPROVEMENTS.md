@@ -101,7 +101,7 @@ def version() -> str: ...
 
 ---
 
-## 6. Reduce PyO3 Boundary Crossings
+## 6. Reduce PyForge Boundary Crossings
 
 **Current state:** `serialize_fields` makes N+1 Python↔Rust boundary crossings (1 per field + 1 for the result dict).
 

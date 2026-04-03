@@ -13,8 +13,8 @@
 //! rust_decimal = "1.0"
 //! ```
 //!
-//! Note that you must use a compatible version of rust_decimal and PyO3.
-//! The required rust_decimal version may vary based on the version of PyO3.
+//! Note that you must use a compatible version of rust_decimal and PyForge.
+//! The required rust_decimal version may vary based on the version of PyForge.
 //!
 //! # Example
 //!

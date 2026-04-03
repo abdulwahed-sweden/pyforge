@@ -21,8 +21,8 @@
 #![doc = concat!("pyo3 = { version = \"", env!("CARGO_PKG_VERSION"),  "\", features = [\"indexmap\"] }")]
 //! ```
 //!
-//! Note that you must use compatible versions of indexmap and PyO3.
-//! The required indexmap version may vary based on the version of PyO3.
+//! Note that you must use compatible versions of indexmap and PyForge.
+//! The required indexmap version may vary based on the version of PyForge.
 //!
 //! # Examples
 //!

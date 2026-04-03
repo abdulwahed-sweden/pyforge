@@ -21,14 +21,14 @@ use std::ptr;
 
 /// Represents any Python object.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyAny>`][crate::Py] or [`Bound<'py, PyAny>`][Bound].
 ///
 /// For APIs available on all Python objects, see the [`PyAnyMethods`] trait which is implemented for
 /// [`Bound<'py, PyAny>`][Bound].
 ///
 /// See
-#[doc = concat!("[the guide](https://pyo3.rs/v", env!("CARGO_PKG_VERSION"), "/types.html#concrete-python-types)")]
+#[doc = concat!("[the guide](https://github.com/abdulwahed-sweden/pyforge/v", env!("CARGO_PKG_VERSION"), "/types.html#concrete-python-types)")]
 /// for an explanation of the different Python object types.
 #[repr(transparent)]
 pub struct PyAny(UnsafeCell<ffi::PyObject>);
@@ -1108,7 +1108,7 @@ impl<'py> PyAnyMethods<'py> for Bound<'py, PyAny> {
         fn inner(any: &Bound<'_, PyAny>, other: Borrowed<'_, '_, PyAny>) -> PyResult<Ordering> {
             let other = other.as_ptr();
             // Almost the same as ffi::PyObject_RichCompareBool, but this one doesn't try self == other.
-            // See https://github.com/PyO3/pyo3/issues/985 for more.
+            // See https://github.com/PyForge/pyo3/issues/985 for more.
             let do_compare = |other, op| unsafe {
                 ffi::PyObject_RichCompare(any.as_ptr(), other, op)
                     .assume_owned_or_err(any.py())

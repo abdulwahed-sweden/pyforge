@@ -14,10 +14,10 @@ fn ensure_auto_initialize_ok(interpreter_config: &InterpreterConfig) -> Result<(
             with the Python shared library.\n\
             \n\
             Embedding the Python interpreter statically does not yet have first-class support in \
-            PyO3. If you are sure you intend to do this, disable the `auto-initialize` feature.\n\
+            PyForge. If you are sure you intend to do this, disable the `auto-initialize` feature.\n\
             \n\
             For more information, see \
-            https://pyo3.rs/v{pyo3_version}/\
+            https://github.com/abdulwahed-sweden/pyforge/v{pyo3_version}/\
                 building-and-distribution.html#embedding-python-in-rust",
             pyo3_version = env::var("CARGO_PKG_VERSION").unwrap()
         );
@@ -25,7 +25,7 @@ fn ensure_auto_initialize_ok(interpreter_config: &InterpreterConfig) -> Result<(
     Ok(())
 }
 
-/// Prepares the PyO3 crate for compilation.
+/// Prepares the PyForge crate for compilation.
 ///
 /// This loads the config from pyo3-build-config and then makes some additional checks to improve UX
 /// for users.

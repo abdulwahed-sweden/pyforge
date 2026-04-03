@@ -45,15 +45,15 @@ pub struct ConstAttributes {
     pub name: Option<NameAttribute>,
 }
 
-pub enum PyO3ConstAttribute {
+pub enum PyForgeConstAttribute {
     Name(NameAttribute),
 }
 
-impl Parse for PyO3ConstAttribute {
+impl Parse for PyForgeConstAttribute {
     fn parse(input: ParseStream<'_>) -> Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(attributes::kw::name) {
-            input.parse().map(PyO3ConstAttribute::Name)
+            input.parse().map(PyForgeConstAttribute::Name)
         } else {
             Err(lookahead.error())
         }
@@ -78,7 +78,7 @@ impl ConstAttributes {
             } else if let Some(pyo3_attributes) = get_pyo3_options(attr)? {
                 for pyo3_attr in pyo3_attributes {
                     match pyo3_attr {
-                        PyO3ConstAttribute::Name(name) => attributes.set_name(name)?,
+                        PyForgeConstAttribute::Name(name) => attributes.set_name(name)?,
                     }
                 }
                 Ok(true)

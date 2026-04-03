@@ -96,5 +96,5 @@ extern_libpython! {
 }
 
 #[cfg(Py_LIMITED_API)]
-// TODO: remove (see https://github.com/PyO3/pyo3/pull/1341#issuecomment-751515985)
+// TODO: remove (see https://github.com/PyForge/pyo3/pull/1341#issuecomment-751515985)
 opaque_struct!(pub PyDictObject);

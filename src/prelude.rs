@@ -1,6 +1,6 @@
-//! PyO3's prelude.
+//! PyForge's prelude.
 //!
-//! The purpose of this module is to alleviate imports of many commonly used items of the PyO3 crate
+//! The purpose of this module is to alleviate imports of many commonly used items of the PyForge crate
 //! by adding a glob import to the top of pyo3 heavy modules:
 //!
 //! ```

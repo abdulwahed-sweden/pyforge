@@ -13,8 +13,8 @@
 #![doc = concat!("pyo3 = { version = \"", env!("CARGO_PKG_VERSION"),  "\", features = [\"time\"] }")]
 //! ```
 //!
-//! Note that you must use compatible versions of time and PyO3.
-//! The required time version may vary based on the version of PyO3.
+//! Note that you must use compatible versions of time and PyForge.
+//! The required time version may vary based on the version of PyForge.
 //!
 //! ```rust
 //! use time::{Duration, OffsetDateTime, PrimitiveDateTime, Date, Time, Month};

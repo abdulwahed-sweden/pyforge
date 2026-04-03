@@ -8,7 +8,7 @@ use std::slice;
 
 /// Represents a Python `bytearray`.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyByteArray>`][crate::Py] or [`Bound<'py, PyByteArray>`][Bound].
 ///
 /// For APIs available on `bytearray` objects, see the [`PyByteArrayMethods`] trait which is implemented for
@@ -120,7 +120,7 @@ pub trait PyByteArrayMethods<'py>: crate::sealed::Sealed {
     ///   invalidate the slice.
     /// - Actions like dropping objects or raising exceptions can invoke `__del__`methods or signal
     ///   handlers, which may execute arbitrary Python code. This means that if Python code has a
-    ///   reference to the `bytearray` you cannot safely use the vast majority of PyO3's API whilst
+    ///   reference to the `bytearray` you cannot safely use the vast majority of PyForge's API whilst
     ///   using the slice.
     ///
     /// As a result, this slice should only be used for short-lived operations without executing any
@@ -139,7 +139,7 @@ pub trait PyByteArrayMethods<'py>: crate::sealed::Sealed {
     /// fn a_valid_function(bytes: &Bound<'_, PyByteArray>) -> PyResult<()> {
     ///     let section = with_critical_section(bytes, || {
     ///         // SAFETY: We promise to not let the interpreter regain control over the bytearray
-    ///         // or invoke any PyO3 APIs while using the slice.
+    ///         // or invoke any PyForge APIs while using the slice.
     ///         let slice = unsafe { bytes.as_bytes() };
     ///
     ///         // Copy only a section of `bytes` while avoiding
@@ -149,7 +149,7 @@ pub trait PyByteArrayMethods<'py>: crate::sealed::Sealed {
     ///             .ok_or_else(|| PyRuntimeError::new_err("input is not long enough"))
     ///     })?;
     ///
-    ///     // Now we can do things with `section` and call PyO3 APIs again.
+    ///     // Now we can do things with `section` and call PyForge APIs again.
     ///     // ...
     ///     # assert_eq!(&section, b"world");
     ///

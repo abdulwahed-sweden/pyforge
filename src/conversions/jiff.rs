@@ -13,8 +13,8 @@
 #![doc = concat!("pyo3 = { version = \"", env!("CARGO_PKG_VERSION"),  "\", features = [\"jiff-02\"] }")]
 //! ```
 //!
-//! Note that you must use compatible versions of jiff and PyO3.
-//! The required jiff version may vary based on the version of PyO3.
+//! Note that you must use compatible versions of jiff and PyForge.
+//! The required jiff version may vary based on the version of PyForge.
 //!
 //! # Example: Convert a `datetime.datetime` to jiff `Zoned`
 //!

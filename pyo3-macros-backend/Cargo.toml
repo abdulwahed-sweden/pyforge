@@ -1,13 +1,13 @@
 [package]
 name = "pyforge-macros-backend"
-version = "0.30.0"
+version = "0.1.0"
 description = "Code generation backend for PyForge macros"
 authors = ["Abdulwahed Mansour"]
 keywords = ["pyforge", "python", "cpython", "ffi"]
 homepage = "https://github.com/abdulwahed-sweden/pyforge"
 repository = "https://github.com/abdulwahed-sweden/pyforge"
 categories = ["api-bindings", "development-tools::ffi"]
-license = "MIT OR Apache-2.0"
+license = "MIT"
 edition = "2021"
 rust-version.workspace = true
 

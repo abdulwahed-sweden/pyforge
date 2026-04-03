@@ -14,8 +14,8 @@
 #![doc = concat!("pyo3 = { version = \"", env!("CARGO_PKG_VERSION"),  "\", features = [\"chrono-tz\"] }")]
 //! ```
 //!
-//! Note that you must use compatible versions of chrono, chrono-tz and PyO3.
-//! The required chrono version may vary based on the version of PyO3.
+//! Note that you must use compatible versions of chrono, chrono-tz and PyForge.
+//! The required chrono version may vary based on the version of PyForge.
 //!
 //! # Example: Convert a `zoneinfo.ZoneInfo` to chrono-tz's `Tz`
 //!

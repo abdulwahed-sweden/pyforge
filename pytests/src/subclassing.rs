@@ -1,4 +1,4 @@
-//! Test for [#220](https://github.com/PyO3/pyo3/issues/220)
+//! Test for [#220](https://github.com/PyForge/pyo3/issues/220)
 
 use pyforge::prelude::*;
 

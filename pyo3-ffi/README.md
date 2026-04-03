@@ -1,9 +1,9 @@
-# pyo3-ffi
+# pyforge-ffi
 
 This crate provides [Rust](https://www.rust-lang.org/) FFI declarations for Python 3.
 It supports both the stable and the unstable component of the ABI through the use of cfg flags.
 Python Versions 3.8+ are supported.
-It is meant for advanced users only - regular PyO3 users shouldn't
+It is meant for advanced users only - regular PyForge users shouldn't
 need to interact with this crate at all.
 
 The contents of this crate are not documented here, as it would entail
@@ -14,14 +14,14 @@ Manual][capi] for up-to-date documentation.
 
 Requires Rust 1.63 or greater.
 
-`pyo3-ffi` supports the following Python distributions:
+`pyforge-ffi` supports the following Python distributions:
   - CPython 3.8 or greater
   - PyPy 7.3 (Python 3.9+)
   - GraalPy 24.0 or greater (Python 3.10+)
 
 # Example: Building Python Native modules
 
-PyO3 can be used to generate a native Python module. The easiest way to try this out for the
+PyForge can be used to generate a native Python module. The easiest way to try this out for the
 first time is to use [`maturin`]. `maturin` is a tool for building and publishing Rust-based
 Python packages with minimal configuration. The following steps set up some files for an example
 Python module, install `maturin`, and then show how to build and import the Python module.
@@ -41,25 +41,25 @@ name = "string_sum"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3-ffi = "0.28.3"
+pyforge-ffi = "0.1.0"
 
 [build-dependencies]
 # This is only necessary if you need to configure your build based on
 # the Python version or the compile-time configuration for the interpreter.
-pyo3_build_config = "0.28.3"
+pyforge_build_config = "0.1.0"
 ```
 
 If you need to use conditional compilation based on Python version or how
-Python was compiled, you need to add `pyo3-build-config` as a
+Python was compiled, you need to add `pyforge-build-config` as a
 `build-dependency` in your `Cargo.toml` as in the example above and either
 create a new `build.rs` file or modify an existing one so that
-`pyo3_build_config::use_pyo3_cfgs()` gets called at build time:
+`pyforge_build_config::use_pyforge_cfgs()` gets called at build time:
 
 **`build.rs`**
 
 ```rust,ignore
 fn main() {
-    pyo3_build_config::use_pyo3_cfgs()
+    pyforge_build_config::use_pyforge_cfgs()
 }
 ```
 
@@ -70,7 +70,7 @@ use std::ffi::c_void;
 use std::ffi::{c_char, c_long};
 use std::ptr;
 
-use pyo3_ffi::*;
+use pyforge_ffi::*;
 
 #[cfg(not(Py_3_15))]
 static mut MODULE_DEF: PyModuleDef = PyModuleDef {
@@ -158,7 +158,7 @@ pub unsafe extern "C" fn PyModExport_string_sum() -> *mut PyModuleDef_Slot {
 }
 
 /// A helper to parse function arguments
-/// If we used PyO3's proc macros they'd handle all of this boilerplate for us :)
+/// If we used PyForge's proc macros they'd handle all of this boilerplate for us :)
 unsafe fn parse_arg_as_i32(obj: *mut PyObject, n_arg: usize) -> Option<i32> {
     if PyLong_Check(obj) == 0 {
         let msg = format!(
@@ -269,18 +269,18 @@ As well as with `maturin`, it is possible to build using [setuptools-rust] or
 configuration.
 
 
-While most projects use the safe wrapper provided by PyO3,
-you can take a look at the [`orjson`] library as an example on how to use `pyo3-ffi` directly.
+While most projects use the safe wrapper provided by PyForge,
+you can take a look at the [`orjson`] library as an example on how to use `pyforge-ffi` directly.
 For those well versed in C and Rust the [tutorials] from the CPython documentation
 can be easily converted to rust as well.
 
 [tutorials]: https://docs.python.org/3/extending/
 [`orjson`]: https://github.com/ijl/orjson
 [capi]: https://docs.python.org/3/c-api/index.html
-[`maturin`]: https://github.com/PyO3/maturin "Build and publish crates with pyo3, rust-cpython and cffi bindings as well as rust binaries as python packages"
-[`pyo3-build-config`]: https://docs.rs/pyo3-build-config
+[`maturin`]: https://github.com/PyForge/maturin "Build and publish crates with pyo3, rust-cpython and cffi bindings as well as rust binaries as python packages"
+[`pyforge-build-config`]: https://docs.rs/pyforge-build-config
 [feature flags]: https://doc.rust-lang.org/cargo/reference/features.html "Features - The Cargo Book"
-[manual_builds]: https://pyo3.rs/latest/building-and-distribution.html#manual-builds "Manual builds - Building and Distribution - PyO3 user guide"
-[setuptools-rust]: https://github.com/PyO3/setuptools-rust "Setuptools plugin for Rust extensions"
+[manual_builds]: https://github.com/abdulwahed-sweden/pyforge/latest/building-and-distribution.html#manual-builds "Manual builds - Building and Distribution - PyForge user guide"
+[setuptools-rust]: https://github.com/PyForge/setuptools-rust "Setuptools plugin for Rust extensions"
 [PEP 384]: https://www.python.org/dev/peps/pep-0384 "PEP 384 -- Defining a Stable ABI"
-[Features chapter of the guide]: https://pyo3.rs/latest/features.html#features-reference "Features Reference - PyO3 user guide"
+[Features chapter of the guide]: https://github.com/abdulwahed-sweden/pyforge/latest/features.html#features-reference "Features Reference - PyForge user guide"

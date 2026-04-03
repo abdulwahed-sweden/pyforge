@@ -3,7 +3,7 @@
 //!  Conversions to and from [num-complex](https://docs.rs/num-complex)’
 //! [`Complex`]`<`[`f32`]`>` and [`Complex`]`<`[`f64`]`>`.
 //!
-//! num-complex’ [`Complex`] supports more operations than PyO3's [`PyComplex`]
+//! num-complex’ [`Complex`] supports more operations than PyForge's [`PyComplex`]
 //! and can be used with the rest of the Rust ecosystem.
 //!
 //! # Setup
@@ -17,8 +17,8 @@
 #![doc = concat!("pyo3 = { version = \"", env!("CARGO_PKG_VERSION"),  "\", features = [\"num-complex\"] }")]
 //! ```
 //!
-//! Note that you must use compatible versions of num-complex and PyO3.
-//! The required num-complex version may vary based on the version of PyO3.
+//! Note that you must use compatible versions of num-complex and PyForge.
+//! The required num-complex version may vary based on the version of PyForge.
 //!
 //! # Examples
 //!

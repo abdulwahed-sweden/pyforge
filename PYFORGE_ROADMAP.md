@@ -2,21 +2,21 @@
 
 **Author & Sole Maintainer:** Abdulwahed Mansour  
 **Repository:** github.com/abdulwahed-sweden/pyforge  
-**License:** MIT OR Apache-2.0  
-**Version:** 0.30.0  
-**Status:** Active Development — Phase 1 In Progress
+**License:** MIT  
+**Version:** 0.1.0  
+**Status:** Pre-Publication — Audit Complete
 
 ---
 
 ## What Is PyForge
 
-PyForge is a modernized, production-focused fork of PyO3, the Rust-Python binding library.
+PyForge is a modernized, production-focused fork of PyO3 (upstream), the Rust-Python binding library.
 
 PyForge strips away legacy compatibility layers and delivers a clean, high-performance bridge between Rust and modern Python. It targets CPython 3.11+ exclusively, promotes async as first-class, and removes support for alternative interpreters (PyPy, GraalPy) that add complexity without serving modern production stacks.
 
-### Key Differences from PyO3
+### Key Differences from PyO3 (Upstream)
 
-| Area | PyO3 0.28.x | PyForge 0.30.0 |
+| Area | PyO3 0.28.x | PyForge 0.1.0 |
 |------|-------------|----------------|
 | Python minimum | 3.8 | **3.11** |
 | Async support | `experimental-async` feature flag | **Always enabled, first-class** |
@@ -89,7 +89,7 @@ Author set to **Abdulwahed Mansour** across all crates.
 - [x] Remove Python 3.8/3.9/3.10 compatibility shims from FFI
 - [x] 925 tests passing, zero compilation errors
 - [x] Simplify CI matrix to CPython 3.11+ (removed 3.8/3.9/3.10, PyPy, GraalPy)
-- [x] Repository cleanup: remove PyO3 branding, irrelevant examples, old docs, Netlify config
+- [x] Repository cleanup: remove PyForge branding, irrelevant examples, old docs, Netlify config
 - [ ] Update UI test snapshots for renamed error messages
 
 ### Phase 2: Django Integration Layer (COMPLETE)

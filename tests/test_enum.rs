@@ -25,7 +25,7 @@ fn test_enum_class_attr() {
 #[test]
 fn test_enum_intopyobject() {
     // Variant of the above that goes via `.into_pyobject()`
-    // - regression test for https://github.com/PyO3/pyo3/issues/5927
+    // - regression test for https://github.com/PyForge/pyo3/issues/5927
     //
     #[pyclass(eq, eq_int, from_py_object)]
     #[derive(Debug, PartialEq, Eq, Clone)]

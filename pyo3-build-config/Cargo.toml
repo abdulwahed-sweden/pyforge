@@ -1,13 +1,13 @@
 [package]
 name = "pyforge-build-config"
-version = "0.30.0"
+version = "0.1.0"
 description = "Build configuration for the PyForge ecosystem — CPython 3.11+ only"
 authors = ["Abdulwahed Mansour"]
 keywords = ["pyforge", "python", "cpython", "build"]
 homepage = "https://github.com/abdulwahed-sweden/pyforge"
 repository = "https://github.com/abdulwahed-sweden/pyforge"
 categories = ["api-bindings", "development-tools::ffi"]
-license = "MIT OR Apache-2.0"
+license = "MIT"
 edition = "2021"
 rust-version.workspace = true
 

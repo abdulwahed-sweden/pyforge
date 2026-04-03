@@ -6,7 +6,7 @@ use crate::{types::PyFrame, PyTypeCheck, Python};
 
 /// Represents a Python traceback.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyTraceback>`][crate::Py] or [`Bound<'py, PyTraceback>`][Bound].
 ///
 /// For APIs available on traceback objects, see the [`PyTracebackMethods`] trait which is implemented for

@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 
 /// Represents a builtin Python function object.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyCFunction>`][crate::Py] or [`Bound<'py, PyCFunction>`][Bound].
 #[repr(transparent)]
 pub struct PyCFunction(PyAny);
@@ -160,7 +160,7 @@ unsafe impl<F: Send> Send for ClosureDestructor<F> {}
 
 /// Represents a Python function object.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyFunction>`][crate::Py] or [`Bound<'py, PyFunction>`][Bound].
 #[repr(transparent)]
 #[cfg(not(Py_LIMITED_API))]

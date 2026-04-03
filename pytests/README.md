@@ -1,6 +1,6 @@
-# pyo3-pytests
+# pyforge-pytests
 
-An extension module built using PyO3, used to test and benchmark PyO3 from Python.
+An extension module built using PyForge, used to test and benchmark PyForge from Python.
 
 The `stubs` directory contains Python stubs used to test the automated stubs introspection.
 To test them run `nox -s test-introspection`.

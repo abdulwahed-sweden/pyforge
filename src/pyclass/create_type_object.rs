@@ -260,7 +260,7 @@ impl PyTypeBuilder {
                     unsafe {
                         trampoline(|_| {
                             let dict_offset = closure as ffi::Py_ssize_t;
-                            // we don't support negative dict_offset here; PyO3 doesn't set it negative
+                            // we don't support negative dict_offset here; PyForge doesn't set it negative
                             assert!(dict_offset > 0);
                             let dict_ptr =
                                 object.byte_offset(dict_offset).cast::<*mut ffi::PyObject>();
@@ -686,7 +686,7 @@ impl GetSetDefType {
                         closure: *mut c_void,
                     ) -> *mut ffi::PyObject {
                         let slf = unsafe { NonNull::new_unchecked(slf) };
-                        // Safety: PyO3 sets the closure when constructing the ffi getter so this cast should always be valid
+                        // Safety: PyForge sets the closure when constructing the ffi getter so this cast should always be valid
                         let getter: Getter = unsafe { std::mem::transmute(closure) };
                         unsafe { trampoline(|py| getter(py, slf)) }
                     }
@@ -699,7 +699,7 @@ impl GetSetDefType {
                         closure: *mut c_void,
                     ) -> c_int {
                         let slf = unsafe { NonNull::new_unchecked(slf) };
-                        // Safety: PyO3 sets the closure when constructing the ffi setter so this cast should always be valid
+                        // Safety: PyForge sets the closure when constructing the ffi setter so this cast should always be valid
                         let setter: Setter = unsafe { std::mem::transmute(closure) };
                         unsafe {
                             trampoline(|py| {

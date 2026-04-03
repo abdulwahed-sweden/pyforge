@@ -1,6 +1,6 @@
 # sequential
 
-A project built using only `pyo3_ffi`, without any of PyO3's safe api. It supports both subinterpreters and free-threaded Python.
+A project built using only `pyforge_ffi`, without any of PyForge's safe api. It supports both subinterpreters and free-threaded Python.
 
 ## Building and Testing
 
@@ -30,7 +30,7 @@ Use [`cargo-generate`](https://crates.io/crates/cargo-generate):
 
 ```bash
 $ cargo install cargo-generate
-$ cargo generate --git https://github.com/PyO3/pyo3 examples/sequential
+$ cargo generate --git https://github.com/PyForge/pyo3 examples/sequential
 ```
 
-(`cargo generate` will take a little while to clone the PyO3 repo first; be patient when waiting for the command to run.)
+(`cargo generate` will take a little while to clone the PyForge repo first; be patient when waiting for the command to run.)

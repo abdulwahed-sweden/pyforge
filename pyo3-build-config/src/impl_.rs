@@ -68,7 +68,7 @@ pub fn target_triple_from_env() -> Triple {
         .expect("Unrecognized TARGET environment variable value")
 }
 
-/// Configuration needed by PyO3 to build for the correct Python implementation.
+/// Configuration needed by PyForge to build for the correct Python implementation.
 ///
 /// Usually this is queried directly from the Python interpreter, or overridden using the
 /// `PYO3_CONFIG_FILE` environment variable.
@@ -458,7 +458,7 @@ print("gil_disabled", get_config_var("Py_GIL_DISABLED"))
     pub fn from_path(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();
         let config_file = std::fs::File::open(path)
-            .with_context(|| format!("failed to open PyO3 config file at {}", path.display()))?;
+            .with_context(|| format!("failed to open PyForge config file at {}", path.display()))?;
         let reader = std::io::BufReader::new(config_file);
         InterpreterConfig::from_reader(reader)
     }
@@ -812,30 +812,30 @@ fn have_python_interpreter() -> bool {
     env_var("PYO3_NO_PYTHON").is_none()
 }
 
-/// Checks if `abi3` or any of the `abi3-py3*` features is enabled for the PyO3 crate.
+/// Checks if `abi3` or any of the `abi3-py3*` features is enabled for the PyForge crate.
 ///
-/// Must be called from a PyO3 crate build script.
+/// Must be called from a PyForge crate build script.
 fn is_abi3() -> bool {
     cargo_env_var("CARGO_FEATURE_ABI3").is_some()
         || env_var("PYO3_USE_ABI3_FORWARD_COMPATIBILITY").is_some_and(|os_str| os_str == "1")
 }
 
-/// Gets the minimum supported Python version from PyO3 `abi3-py*` features.
+/// Gets the minimum supported Python version from PyForge `abi3-py*` features.
 ///
-/// Must be called from a PyO3 crate build script.
+/// Must be called from a PyForge crate build script.
 pub fn get_abi3_version() -> Option<PythonVersion> {
     let minor_version = (MINIMUM_SUPPORTED_VERSION.minor..=ABI3_MAX_MINOR)
         .find(|i| cargo_env_var(&format!("CARGO_FEATURE_ABI3_PY3{i}")).is_some());
     minor_version.map(|minor| PythonVersion { major: 3, minor })
 }
 
-/// Checks if the `extension-module` feature is enabled for the PyO3 crate.
+/// Checks if the `extension-module` feature is enabled for the PyForge crate.
 ///
 /// This can be triggered either by:
 /// - The `extension-module` Cargo feature (deprecated)
 /// - Setting the `PYO3_BUILD_EXTENSION_MODULE` environment variable
 ///
-/// Must be called from a PyO3 crate build script.
+/// Must be called from a PyForge crate build script.
 pub fn is_extension_module() -> bool {
     cargo_env_var("CARGO_FEATURE_EXTENSION_MODULE").is_some()
         || env_var("PYO3_BUILD_EXTENSION_MODULE").is_some()
@@ -843,10 +843,10 @@ pub fn is_extension_module() -> bool {
 
 /// Checks if we need to link to `libpython` for the target.
 ///
-/// Must be called from a PyO3 crate build script.
+/// Must be called from a PyForge crate build script.
 pub fn is_linking_libpython_for_target(target: &Triple) -> bool {
     target.operating_system == OperatingSystem::Windows
-        // See https://github.com/PyO3/pyo3/issues/4068#issuecomment-2051159852
+        // See https://github.com/PyForge/pyo3/issues/4068#issuecomment-2051159852
         || target.operating_system == OperatingSystem::Aix
         || target.environment == Environment::Android
         || target.environment == Environment::Androideabi
@@ -858,7 +858,7 @@ pub fn is_linking_libpython_for_target(target: &Triple) -> bool {
 /// Checks if we need to discover the Python library directory
 /// to link the extension module binary.
 ///
-/// Must be called from a PyO3 crate build script.
+/// Must be called from a PyForge crate build script.
 fn require_libdir_for_target(target: &Triple) -> bool {
     // With raw-dylib, Windows targets never need a lib dir — the compiler generates
     // import entries directly from `#[link(kind = "raw-dylib")]` attributes.
@@ -869,7 +869,7 @@ fn require_libdir_for_target(target: &Triple) -> bool {
     is_linking_libpython_for_target(target)
 }
 
-/// Configuration needed by PyO3 to cross-compile for a target platform.
+/// Configuration needed by PyForge to cross-compile for a target platform.
 ///
 /// Usually this is collected from the environment (i.e. `PYO3_CROSS_*` and `CARGO_CFG_TARGET_*`)
 /// when a cross-compilation configuration is detected.
@@ -892,7 +892,7 @@ pub struct CrossCompileConfig {
 }
 
 impl CrossCompileConfig {
-    /// Creates a new cross compile config struct from PyO3 environment variables
+    /// Creates a new cross compile config struct from PyForge environment variables
     /// and the build environment when cross compilation mode is detected.
     ///
     /// Returns `None` when not cross compiling.
@@ -959,7 +959,7 @@ impl CrossCompileConfig {
     }
 }
 
-/// PyO3-specific cross compile environment variable values
+/// PyForge-specific cross compile environment variable values
 struct CrossCompileEnvVars {
     /// `PYO3_CROSS`
     pyo3_cross: Option<OsString>,
@@ -972,7 +972,7 @@ struct CrossCompileEnvVars {
 }
 
 impl CrossCompileEnvVars {
-    /// Grabs the PyO3 cross-compile variables from the environment.
+    /// Grabs the PyForge cross-compile variables from the environment.
     ///
     /// Registers the build script to rerun if any of the variables changes.
     fn from_env() -> Self {
@@ -1053,18 +1053,18 @@ impl CrossCompileEnvVars {
 
 /// Detect whether we are cross compiling and return an assembled CrossCompileConfig if so.
 ///
-/// This function relies on PyO3 cross-compiling environment variables:
+/// This function relies on PyForge cross-compiling environment variables:
 ///
-/// * `PYO3_CROSS`: If present, forces PyO3 to configure as a cross-compilation.
+/// * `PYO3_CROSS`: If present, forces PyForge to configure as a cross-compilation.
 /// * `PYO3_CROSS_LIB_DIR`: If present, must be set to the directory containing
 ///   the target's libpython DSO and the associated `_sysconfigdata*.py` file for
 ///   Unix-like targets, or the Python DLL import libraries for the Windows target.
 /// * `PYO3_CROSS_PYTHON_VERSION`: Major and minor version (e.g. 3.9) of the target Python
-///   installation. This variable is only needed if PyO3 cannot determine the version to target
+///   installation. This variable is only needed if PyForge cannot determine the version to target
 ///   from `abi3-py3*` features, or if there are multiple versions of Python present in
 ///   `PYO3_CROSS_LIB_DIR`.
 ///
-/// See the [PyO3 User Guide](https://pyo3.rs/) for more info on cross-compiling.
+/// See the [PyForge User Guide](https://github.com/abdulwahed-sweden/pyforge/) for more info on cross-compiling.
 pub fn cross_compiling_from_to(
     host: &Triple,
     target: &Triple,
@@ -1076,7 +1076,7 @@ pub fn cross_compiling_from_to(
 /// Detect whether we are cross compiling from Cargo and `PYO3_CROSS_*` environment
 /// variables and return an assembled `CrossCompileConfig` if so.
 ///
-/// This must be called from PyO3's build script, because it relies on environment
+/// This must be called from PyForge's build script, because it relies on environment
 /// variables such as `CARGO_CFG_TARGET_OS` which aren't available at any other time.
 #[allow(dead_code)]
 pub fn cross_compiling_from_cargo_env() -> Result<Option<CrossCompileConfig>> {
@@ -1092,7 +1092,7 @@ pub fn cross_compiling_from_cargo_env() -> Result<Option<CrossCompileConfig>> {
 pub enum BuildFlag {
     Py_DEBUG,
     Py_REF_DEBUG,
-    #[deprecated(since = "0.29.0", note = "no longer supported by PyO3")]
+    #[deprecated(since = "0.29.0", note = "no longer supported by PyForge")]
     Py_TRACE_REFS,
     Py_GIL_DISABLED,
     COUNT_ALLOCS,
@@ -1123,7 +1123,7 @@ impl FromStr for BuildFlag {
 
 /// A list of python interpreter compile-time preprocessor defines.
 ///
-/// PyO3 will pick these up and pass to rustc via `--cfg=py_sys_config={varname}`;
+/// PyForge will pick these up and pass to rustc via `--cfg=py_sys_config={varname}`;
 /// this allows using them conditional cfg attributes in the .rs files, so
 ///
 /// ```rust,no_run
@@ -1524,7 +1524,7 @@ fn cross_compile_from_sysconfigdata(
 /// This should work for most CPython extension modules when targeting
 /// Windows, macOS and Linux.
 ///
-/// Must be called from a PyO3 crate build script.
+/// Must be called from a PyForge crate build script.
 #[allow(unused_mut, dead_code)]
 fn default_cross_compile(cross_compile_config: &CrossCompileConfig) -> Result<InterpreterConfig> {
     let version = cross_compile_config
@@ -1534,7 +1534,7 @@ fn default_cross_compile(cross_compile_config: &CrossCompileConfig) -> Result<In
             format!(
                 "PYO3_CROSS_PYTHON_VERSION or an abi3-py3* feature must be specified \
                 when cross-compiling and PYO3_CROSS_LIB_DIR is not set.\n\
-                = help: see the PyO3 user guide for more information: https://pyo3.rs/v{}/building-and-distribution.html#cross-compiling",
+                = help: see the PyForge user guide for more information: https://github.com/abdulwahed-sweden/pyforge/v{}/building-and-distribution.html#cross-compiling",
                 env!("CARGO_PKG_VERSION")
             )
         )?;
@@ -1579,7 +1579,7 @@ fn default_cross_compile(cross_compile_config: &CrossCompileConfig) -> Result<In
 /// This should work for most CPython extension modules when compiling on
 /// Windows, macOS and Linux.
 ///
-/// Must be called from a PyO3 crate build script.
+/// Must be called from a PyForge crate build script.
 fn default_abi3_config(host: &Triple, version: PythonVersion) -> Result<InterpreterConfig> {
     // FIXME: PyPy & GraalPy do not support the Stable ABI.
     let implementation = PythonImplementation::CPython;
@@ -1615,12 +1615,12 @@ fn default_abi3_config(host: &Triple, version: PythonVersion) -> Result<Interpre
 }
 
 /// Detects the cross compilation target interpreter configuration from all
-/// available sources (PyO3 environment variables, Python sysconfigdata, etc.).
+/// available sources (PyForge environment variables, Python sysconfigdata, etc.).
 ///
 /// Returns the "default" target interpreter configuration for Windows and
 /// when no target Python interpreter is found.
 ///
-/// Must be called from a PyO3 crate build script.
+/// Must be called from a PyForge crate build script.
 #[allow(dead_code)]
 fn load_cross_compile_config(
     cross_compile_config: CrossCompileConfig,
@@ -1811,7 +1811,7 @@ fn get_env_interpreter() -> Option<PathBuf> {
         (None, Some(dir)) => Some(conda_env_interpreter(&dir, cfg!(windows))),
         (Some(_), Some(_)) => {
             warn!(
-                "Both VIRTUAL_ENV and CONDA_PREFIX are set. PyO3 will ignore both of these for \
+                "Both VIRTUAL_ENV and CONDA_PREFIX are set. PyForge will ignore both of these for \
                  locating the Python interpreter until you unset one of them."
             );
             None
@@ -1829,7 +1829,7 @@ fn get_env_interpreter() -> Option<PathBuf> {
 ///   4. `python3`, as above
 pub fn find_interpreter() -> Result<PathBuf> {
     // Trigger rebuilds when `PYO3_ENVIRONMENT_SIGNATURE` env var value changes
-    // See https://github.com/PyO3/pyo3/issues/2724
+    // See https://github.com/PyForge/pyo3/issues/2724
     println!("cargo:rerun-if-env-changed=PYO3_ENVIRONMENT_SIGNATURE");
 
     if let Some(exe) = env_var("PYO3_PYTHON") {
@@ -1869,7 +1869,7 @@ fn get_host_interpreter(abi3_version: Option<PythonVersion>) -> Result<Interpret
 
 /// Generates an interpreter config suitable for cross-compilation.
 ///
-/// This must be called from PyO3's build script, because it relies on environment variables such as
+/// This must be called from PyForge's build script, because it relies on environment variables such as
 /// CARGO_CFG_TARGET_OS which aren't available at any other time.
 #[allow(dead_code)]
 pub fn make_cross_compile_config() -> Result<Option<InterpreterConfig>> {
@@ -2140,7 +2140,7 @@ mod tests {
     fn config_from_interpreter() {
         // Smoke test to just see whether this works
         //
-        // PyO3's CI is dependent on Python being installed, so this should be reliable.
+        // PyForge's CI is dependent on Python being installed, so this should be reliable.
         assert!(make_interpreter_config().is_ok())
     }
 

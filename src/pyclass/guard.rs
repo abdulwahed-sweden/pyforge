@@ -20,8 +20,8 @@ use std::ptr::NonNull;
 /// the complete opposite of that - any Python object can be referenced any
 /// number of times, and mutation is allowed from any reference.
 ///
-/// PyO3 deals with these differences by employing the [Interior Mutability]
-/// pattern. This requires that PyO3 enforces the borrowing rules and it has two
+/// PyForge deals with these differences by employing the [Interior Mutability]
+/// pattern. This requires that PyForge enforces the borrowing rules and it has two
 /// mechanisms for doing so:
 /// - Statically it can enforce thread-safe access with the
 ///   [`Python<'py>`](crate::Python) token. All Rust code holding that token, or
@@ -29,7 +29,7 @@ use std::ptr::NonNull;
 ///   Python interpreter's state. For this reason all the native Python objects
 ///   can be mutated through shared references.
 /// - However, methods and functions in Rust usually *do* need `&mut`
-///   references. While PyO3 can use the [`Python<'py>`](crate::Python) token to
+///   references. While PyForge can use the [`Python<'py>`](crate::Python) token to
 ///   guarantee thread-safe access to them, it cannot statically guarantee
 ///   uniqueness of `&mut` references. As such those references have to be
 ///   tracked dynamically at runtime, using [`PyClassGuard`] and
@@ -84,7 +84,7 @@ use std::ptr::NonNull;
 ///     https://doc.rust-lang.org/book/ch15-05-interior-mutability.html
 ///     "RefCell<T> and the Interior Mutability Pattern - The Rust Programming
 ///     Language"
-/// [guide]: https://pyo3.rs/latest/class.html#bound-and-interior-mutability
+/// [guide]: https://github.com/abdulwahed-sweden/pyforge/latest/class.html#bound-and-interior-mutability
 ///     "Bound and interior mutability"
 #[repr(transparent)]
 pub struct PyClassGuard<'a, T: PyClass> {
@@ -594,7 +594,7 @@ impl From<PyClassGuardError<'_, '_>> for PyErr {
 /// ```
 /// See [`PyClassGuard`] and the [guide] for more information.
 ///
-/// [guide]: https://pyo3.rs/latest/class.html#bound-and-interior-mutability
+/// [guide]: https://github.com/abdulwahed-sweden/pyforge/latest/class.html#bound-and-interior-mutability
 ///     "Bound and interior mutability"
 #[repr(transparent)]
 pub struct PyClassGuardMut<'a, T: PyClass<Frozen = False>> {

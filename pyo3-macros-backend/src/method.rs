@@ -16,7 +16,7 @@ use crate::{
     attributes::{FromPyWithAttribute, TextSignatureAttribute, TextSignatureAttributeValue},
     params::{impl_arg_params, Holders},
     pyfunction::{
-        FunctionSignature, PyFunctionArgPyO3Attributes, PyFunctionOptions, SignatureAttribute,
+        FunctionSignature, PyFunctionArgPyForgeAttributes, PyFunctionOptions, SignatureAttribute,
     },
     quotes,
     utils::{self, PythonDoc},
@@ -160,10 +160,10 @@ impl<'a> FnArg<'a> {
                     bail_spanned!(cap.ty.span() => IMPL_TRAIT_ERR);
                 }
 
-                let PyFunctionArgPyO3Attributes {
+                let PyFunctionArgPyForgeAttributes {
                     from_py_with,
                     cancel_handle,
-                } = PyFunctionArgPyO3Attributes::from_attrs(&mut cap.attrs)?;
+                } = PyFunctionArgPyForgeAttributes::from_attrs(&mut cap.attrs)?;
                 let ident = match &*cap.pat {
                     syn::Pat::Ident(syn::PatIdent { ident, .. }) => ident,
                     other => return Err(handle_argument_error(other)),
@@ -177,7 +177,7 @@ impl<'a> FnArg<'a> {
                 }
 
                 if cancel_handle.is_some() {
-                    // `PyFunctionArgPyO3Attributes::from_attrs` validates that
+                    // `PyFunctionArgPyForgeAttributes::from_attrs` validates that
                     // only compatible attributes are specified, either
                     // `cancel_handle` or `from_py_with`, duplicates and any
                     // combination of the two are already rejected.

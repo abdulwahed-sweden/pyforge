@@ -1,6 +1,6 @@
 # decorator
 
-A project showcasing the example from the [Emulating callable objects](https://pyo3.rs/latest/class/call.html) chapter of the guide.
+A project showcasing the example from the [Emulating callable objects](https://github.com/abdulwahed-sweden/pyforge/latest/class/call.html) chapter of the guide.
 
 ## Building and Testing
 
@@ -30,7 +30,7 @@ Use [`cargo-generate`](https://crates.io/crates/cargo-generate):
 
 ```bash
 $ cargo install cargo-generate
-$ cargo generate --git https://github.com/PyO3/pyo3 examples/decorator
+$ cargo generate --git https://github.com/PyForge/pyo3 examples/decorator
 ```
 
-(`cargo generate` will take a little while to clone the PyO3 repo first; be patient when waiting for the command to run.)
+(`cargo generate` will take a little while to clone the PyForge repo first; be patient when waiting for the command to run.)

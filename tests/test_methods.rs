@@ -1182,7 +1182,7 @@ pymethods!(
 #[test]
 fn test_option_pyclass_arg() {
     // Option<&PyClass> argument with a default set in a signature regressed to a compile
-    // error in PyO3 0.17.0 - this test it continues to be accepted.
+    // error in PyForge 0.17.0 - this test it continues to be accepted.
 
     #[pyclass]
     struct SomePyClass {}

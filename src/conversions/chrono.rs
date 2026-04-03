@@ -13,8 +13,8 @@
 #![doc = concat!("pyo3 = { version = \"", env!("CARGO_PKG_VERSION"),  "\", features = [\"chrono\"] }")]
 //! ```
 //!
-//! Note that you must use compatible versions of chrono and PyO3.
-//! The required chrono version may vary based on the version of PyO3.
+//! Note that you must use compatible versions of chrono and PyForge.
+//! The required chrono version may vary based on the version of PyForge.
 //!
 //! # Example: Convert a `datetime.datetime` to chrono's `DateTime<Utc>`
 //!

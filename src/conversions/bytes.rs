@@ -23,7 +23,7 @@
 #![doc = concat!("pyo3 = { version = \"", env!("CARGO_PKG_VERSION"),  "\", features = [\"bytes\"] }")]
 //! ```
 //!
-//! Note that you must use compatible versions of bytes and PyO3.
+//! Note that you must use compatible versions of bytes and PyForge.
 //!
 //! # Example
 //!

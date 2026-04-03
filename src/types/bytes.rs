@@ -11,7 +11,7 @@ use std::str;
 ///
 /// This type is immutable.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyBytes>`][crate::Py] or [`Bound<'py, PyBytes>`][Bound].
 ///
 /// For APIs available on `bytes` objects, see the [`PyBytesMethods`] trait which is implemented for

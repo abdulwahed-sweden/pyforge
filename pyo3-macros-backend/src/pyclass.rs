@@ -49,14 +49,14 @@ pub enum PyClassKind {
 #[derive(Clone)]
 pub struct PyClassArgs {
     pub class_kind: PyClassKind,
-    pub options: PyClassPyO3Options,
+    pub options: PyClassPyForgeOptions,
 }
 
 impl PyClassArgs {
     fn parse(input: ParseStream<'_>, kind: PyClassKind) -> Result<Self> {
         Ok(PyClassArgs {
             class_kind: kind,
-            options: PyClassPyO3Options::parse(input)?,
+            options: PyClassPyForgeOptions::parse(input)?,
         })
     }
 
@@ -70,7 +70,7 @@ impl PyClassArgs {
 }
 
 #[derive(Clone, Default)]
-pub struct PyClassPyO3Options {
+pub struct PyClassPyForgeOptions {
     pub krate: Option<CrateAttribute>,
     pub dict: Option<kw::dict>,
     pub eq: Option<kw::eq>,
@@ -98,7 +98,7 @@ pub struct PyClassPyO3Options {
     pub skip_from_py_object: Option<kw::skip_from_py_object>,
 }
 
-pub enum PyClassPyO3Option {
+pub enum PyClassPyForgeOption {
     Crate(CrateAttribute),
     Dict(kw::dict),
     Eq(kw::eq),
@@ -126,70 +126,70 @@ pub enum PyClassPyO3Option {
     SkipFromPyObject(kw::skip_from_py_object),
 }
 
-impl Parse for PyClassPyO3Option {
+impl Parse for PyClassPyForgeOption {
     fn parse(input: ParseStream<'_>) -> Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(Token![crate]) {
-            input.parse().map(PyClassPyO3Option::Crate)
+            input.parse().map(PyClassPyForgeOption::Crate)
         } else if lookahead.peek(kw::dict) {
-            input.parse().map(PyClassPyO3Option::Dict)
+            input.parse().map(PyClassPyForgeOption::Dict)
         } else if lookahead.peek(kw::eq) {
-            input.parse().map(PyClassPyO3Option::Eq)
+            input.parse().map(PyClassPyForgeOption::Eq)
         } else if lookahead.peek(kw::eq_int) {
-            input.parse().map(PyClassPyO3Option::EqInt)
+            input.parse().map(PyClassPyForgeOption::EqInt)
         } else if lookahead.peek(kw::extends) {
-            input.parse().map(PyClassPyO3Option::Extends)
+            input.parse().map(PyClassPyForgeOption::Extends)
         } else if lookahead.peek(attributes::kw::freelist) {
-            input.parse().map(PyClassPyO3Option::Freelist)
+            input.parse().map(PyClassPyForgeOption::Freelist)
         } else if lookahead.peek(attributes::kw::frozen) {
-            input.parse().map(PyClassPyO3Option::Frozen)
+            input.parse().map(PyClassPyForgeOption::Frozen)
         } else if lookahead.peek(attributes::kw::get_all) {
-            input.parse().map(PyClassPyO3Option::GetAll)
+            input.parse().map(PyClassPyForgeOption::GetAll)
         } else if lookahead.peek(attributes::kw::hash) {
-            input.parse().map(PyClassPyO3Option::Hash)
+            input.parse().map(PyClassPyForgeOption::Hash)
         } else if lookahead.peek(attributes::kw::immutable_type) {
-            input.parse().map(PyClassPyO3Option::ImmutableType)
+            input.parse().map(PyClassPyForgeOption::ImmutableType)
         } else if lookahead.peek(attributes::kw::mapping) {
-            input.parse().map(PyClassPyO3Option::Mapping)
+            input.parse().map(PyClassPyForgeOption::Mapping)
         } else if lookahead.peek(attributes::kw::module) {
-            input.parse().map(PyClassPyO3Option::Module)
+            input.parse().map(PyClassPyForgeOption::Module)
         } else if lookahead.peek(kw::name) {
-            input.parse().map(PyClassPyO3Option::Name)
+            input.parse().map(PyClassPyForgeOption::Name)
         } else if lookahead.peek(attributes::kw::ord) {
-            input.parse().map(PyClassPyO3Option::Ord)
+            input.parse().map(PyClassPyForgeOption::Ord)
         } else if lookahead.peek(kw::rename_all) {
-            input.parse().map(PyClassPyO3Option::RenameAll)
+            input.parse().map(PyClassPyForgeOption::RenameAll)
         } else if lookahead.peek(attributes::kw::sequence) {
-            input.parse().map(PyClassPyO3Option::Sequence)
+            input.parse().map(PyClassPyForgeOption::Sequence)
         } else if lookahead.peek(attributes::kw::set_all) {
-            input.parse().map(PyClassPyO3Option::SetAll)
+            input.parse().map(PyClassPyForgeOption::SetAll)
         } else if lookahead.peek(attributes::kw::new) {
-            input.parse().map(PyClassPyO3Option::New)
+            input.parse().map(PyClassPyForgeOption::New)
         } else if lookahead.peek(attributes::kw::str) {
-            input.parse().map(PyClassPyO3Option::Str)
+            input.parse().map(PyClassPyForgeOption::Str)
         } else if lookahead.peek(attributes::kw::subclass) {
-            input.parse().map(PyClassPyO3Option::Subclass)
+            input.parse().map(PyClassPyForgeOption::Subclass)
         } else if lookahead.peek(attributes::kw::unsendable) {
-            input.parse().map(PyClassPyO3Option::Unsendable)
+            input.parse().map(PyClassPyForgeOption::Unsendable)
         } else if lookahead.peek(attributes::kw::weakref) {
-            input.parse().map(PyClassPyO3Option::Weakref)
+            input.parse().map(PyClassPyForgeOption::Weakref)
         } else if lookahead.peek(attributes::kw::generic) {
-            input.parse().map(PyClassPyO3Option::Generic)
+            input.parse().map(PyClassPyForgeOption::Generic)
         } else if lookahead.peek(attributes::kw::from_py_object) {
-            input.parse().map(PyClassPyO3Option::FromPyObject)
+            input.parse().map(PyClassPyForgeOption::FromPyObject)
         } else if lookahead.peek(attributes::kw::skip_from_py_object) {
-            input.parse().map(PyClassPyO3Option::SkipFromPyObject)
+            input.parse().map(PyClassPyForgeOption::SkipFromPyObject)
         } else {
             Err(lookahead.error())
         }
     }
 }
 
-impl Parse for PyClassPyO3Options {
+impl Parse for PyClassPyForgeOptions {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let mut options: PyClassPyO3Options = Default::default();
+        let mut options: PyClassPyForgeOptions = Default::default();
 
-        for option in Punctuated::<PyClassPyO3Option, syn::Token![,]>::parse_terminated(input)? {
+        for option in Punctuated::<PyClassPyForgeOption, syn::Token![,]>::parse_terminated(input)? {
             options.set_option(option)?;
         }
 
@@ -197,14 +197,14 @@ impl Parse for PyClassPyO3Options {
     }
 }
 
-impl PyClassPyO3Options {
+impl PyClassPyForgeOptions {
     pub fn take_pyo3_options(&mut self, attrs: &mut Vec<syn::Attribute>) -> syn::Result<()> {
         take_pyo3_options(attrs)?
             .into_iter()
             .try_for_each(|option| self.set_option(option))
     }
 
-    fn set_option(&mut self, option: PyClassPyO3Option) -> syn::Result<()> {
+    fn set_option(&mut self, option: PyClassPyForgeOption) -> syn::Result<()> {
         macro_rules! set_option {
             ($key:ident) => {
                 {
@@ -218,39 +218,39 @@ impl PyClassPyO3Options {
         }
 
         match option {
-            PyClassPyO3Option::Crate(krate) => set_option!(krate),
-            PyClassPyO3Option::Dict(dict) => set_option!(dict),
-            PyClassPyO3Option::Eq(eq) => set_option!(eq),
-            PyClassPyO3Option::EqInt(eq_int) => set_option!(eq_int),
-            PyClassPyO3Option::Extends(extends) => set_option!(extends),
-            PyClassPyO3Option::Freelist(freelist) => set_option!(freelist),
-            PyClassPyO3Option::Frozen(frozen) => set_option!(frozen),
-            PyClassPyO3Option::GetAll(get_all) => set_option!(get_all),
-            PyClassPyO3Option::ImmutableType(immutable_type) => {
+            PyClassPyForgeOption::Crate(krate) => set_option!(krate),
+            PyClassPyForgeOption::Dict(dict) => set_option!(dict),
+            PyClassPyForgeOption::Eq(eq) => set_option!(eq),
+            PyClassPyForgeOption::EqInt(eq_int) => set_option!(eq_int),
+            PyClassPyForgeOption::Extends(extends) => set_option!(extends),
+            PyClassPyForgeOption::Freelist(freelist) => set_option!(freelist),
+            PyClassPyForgeOption::Frozen(frozen) => set_option!(frozen),
+            PyClassPyForgeOption::GetAll(get_all) => set_option!(get_all),
+            PyClassPyForgeOption::ImmutableType(immutable_type) => {
                 set_option!(immutable_type)
             }
-            PyClassPyO3Option::Hash(hash) => set_option!(hash),
-            PyClassPyO3Option::Mapping(mapping) => set_option!(mapping),
-            PyClassPyO3Option::Module(module) => set_option!(module),
-            PyClassPyO3Option::Name(name) => set_option!(name),
-            PyClassPyO3Option::Ord(ord) => set_option!(ord),
-            PyClassPyO3Option::RenameAll(rename_all) => set_option!(rename_all),
-            PyClassPyO3Option::Sequence(sequence) => set_option!(sequence),
-            PyClassPyO3Option::SetAll(set_all) => set_option!(set_all),
-            PyClassPyO3Option::New(new) => set_option!(new),
-            PyClassPyO3Option::Str(str) => set_option!(str),
-            PyClassPyO3Option::Subclass(subclass) => set_option!(subclass),
-            PyClassPyO3Option::Unsendable(unsendable) => set_option!(unsendable),
-            PyClassPyO3Option::Weakref(weakref) => set_option!(weakref),
-            PyClassPyO3Option::Generic(generic) => set_option!(generic),
-            PyClassPyO3Option::SkipFromPyObject(skip_from_py_object) => {
+            PyClassPyForgeOption::Hash(hash) => set_option!(hash),
+            PyClassPyForgeOption::Mapping(mapping) => set_option!(mapping),
+            PyClassPyForgeOption::Module(module) => set_option!(module),
+            PyClassPyForgeOption::Name(name) => set_option!(name),
+            PyClassPyForgeOption::Ord(ord) => set_option!(ord),
+            PyClassPyForgeOption::RenameAll(rename_all) => set_option!(rename_all),
+            PyClassPyForgeOption::Sequence(sequence) => set_option!(sequence),
+            PyClassPyForgeOption::SetAll(set_all) => set_option!(set_all),
+            PyClassPyForgeOption::New(new) => set_option!(new),
+            PyClassPyForgeOption::Str(str) => set_option!(str),
+            PyClassPyForgeOption::Subclass(subclass) => set_option!(subclass),
+            PyClassPyForgeOption::Unsendable(unsendable) => set_option!(unsendable),
+            PyClassPyForgeOption::Weakref(weakref) => set_option!(weakref),
+            PyClassPyForgeOption::Generic(generic) => set_option!(generic),
+            PyClassPyForgeOption::SkipFromPyObject(skip_from_py_object) => {
                 ensure_spanned!(
                     self.from_py_object.is_none(),
                     skip_from_py_object.span() => "`skip_from_py_object` and `from_py_object` are mutually exclusive"
                 );
                 set_option!(skip_from_py_object)
             }
-            PyClassPyO3Option::FromPyObject(from_py_object) => {
+            PyClassPyForgeOption::FromPyObject(from_py_object) => {
                 ensure_spanned!(
                     self.skip_from_py_object.is_none(),
                     from_py_object.span() => "`skip_from_py_object` and `from_py_object` are mutually exclusive"
@@ -276,7 +276,7 @@ pub fn build_py_class(
         bail_spanned!(
             lt.span() => concat!(
                 "#[pyclass] cannot have lifetime parameters. For an explanation, see \
-                https://pyo3.rs/v", env!("CARGO_PKG_VERSION"), "/class.html#no-lifetime-parameters"
+                https://github.com/abdulwahed-sweden/pyforge/v", env!("CARGO_PKG_VERSION"), "/class.html#no-lifetime-parameters"
             )
         );
     }
@@ -285,16 +285,16 @@ pub fn build_py_class(
         class.generics.params.is_empty(),
         class.generics.span() => concat!(
             "#[pyclass] cannot have generic parameters. For an explanation, see \
-            https://pyo3.rs/v", env!("CARGO_PKG_VERSION"), "/class.html#no-generic-parameters"
+            https://github.com/abdulwahed-sweden/pyforge/v", env!("CARGO_PKG_VERSION"), "/class.html#no-generic-parameters"
         )
     );
 
-    let mut field_options: Vec<(&syn::Field, FieldPyO3Options)> = match &mut class.fields {
+    let mut field_options: Vec<(&syn::Field, FieldPyForgeOptions)> = match &mut class.fields {
         syn::Fields::Named(fields) => fields
             .named
             .iter_mut()
             .map(
-                |field| match FieldPyO3Options::take_pyo3_options(&mut field.attrs) {
+                |field| match FieldPyForgeOptions::take_pyo3_options(&mut field.attrs) {
                     Ok(options) => Ok((&*field, options)),
                     Err(e) => Err(e),
                 },
@@ -304,7 +304,7 @@ pub fn build_py_class(
             .unnamed
             .iter_mut()
             .map(
-                |field| match FieldPyO3Options::take_pyo3_options(&mut field.attrs) {
+                |field| match FieldPyForgeOptions::take_pyo3_options(&mut field.attrs) {
                     Ok(options) => Ok((&*field, options)),
                     Err(e) => Err(e),
                 },
@@ -327,7 +327,7 @@ pub fn build_py_class(
     .try_combine_syn_errors()?;
 
     if let Some(attr) = args.options.get_all {
-        for (_, FieldPyO3Options { get, .. }) in &mut field_options {
+        for (_, FieldPyForgeOptions { get, .. }) in &mut field_options {
             if let Some(old_get) = get.replace(Annotated::Struct(attr)) {
                 return Err(syn::Error::new(old_get.span(), DUPE_GET));
             }
@@ -335,7 +335,7 @@ pub fn build_py_class(
     }
 
     if let Some(attr) = args.options.set_all {
-        for (_, FieldPyO3Options { set, .. }) in &mut field_options {
+        for (_, FieldPyForgeOptions { set, .. }) in &mut field_options {
             if let Some(old_set) = set.replace(Annotated::Struct(attr)) {
                 return Err(syn::Error::new(old_set.span(), DUPE_SET));
             }
@@ -360,36 +360,36 @@ impl<X: Spanned, Y: Spanned> Annotated<X, Y> {
 }
 
 /// `#[pyo3()]` options for pyclass fields
-struct FieldPyO3Options {
+struct FieldPyForgeOptions {
     get: Option<Annotated<kw::get, kw::get_all>>,
     set: Option<Annotated<kw::set, kw::set_all>>,
     name: Option<NameAttribute>,
 }
 
-enum FieldPyO3Option {
+enum FieldPyForgeOption {
     Get(attributes::kw::get),
     Set(attributes::kw::set),
     Name(NameAttribute),
 }
 
-impl Parse for FieldPyO3Option {
+impl Parse for FieldPyForgeOption {
     fn parse(input: ParseStream<'_>) -> Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(attributes::kw::get) {
-            input.parse().map(FieldPyO3Option::Get)
+            input.parse().map(FieldPyForgeOption::Get)
         } else if lookahead.peek(attributes::kw::set) {
-            input.parse().map(FieldPyO3Option::Set)
+            input.parse().map(FieldPyForgeOption::Set)
         } else if lookahead.peek(attributes::kw::name) {
-            input.parse().map(FieldPyO3Option::Name)
+            input.parse().map(FieldPyForgeOption::Name)
         } else {
             Err(lookahead.error())
         }
     }
 }
 
-impl FieldPyO3Options {
+impl FieldPyForgeOptions {
     fn take_pyo3_options(attrs: &mut Vec<syn::Attribute>) -> Result<Self> {
-        let mut options = FieldPyO3Options {
+        let mut options = FieldPyForgeOptions {
             get: None,
             set: None,
             name: None,
@@ -397,17 +397,17 @@ impl FieldPyO3Options {
 
         for option in take_pyo3_options(attrs)? {
             match option {
-                FieldPyO3Option::Get(kw) => {
+                FieldPyForgeOption::Get(kw) => {
                     if options.get.replace(Annotated::Field(kw)).is_some() {
                         return Err(syn::Error::new(kw.span(), UNIQUE_GET));
                     }
                 }
-                FieldPyO3Option::Set(kw) => {
+                FieldPyForgeOption::Set(kw) => {
                     if options.set.replace(Annotated::Field(kw)).is_some() {
                         return Err(syn::Error::new(kw.span(), UNIQUE_SET));
                     }
                 }
-                FieldPyO3Option::Name(name) => {
+                FieldPyForgeOption::Name(name) => {
                     if options.name.replace(name).is_some() {
                         return Err(syn::Error::new(options.name.span(), UNIQUE_NAME));
                     }
@@ -460,7 +460,7 @@ fn impl_class(
     cls: &Ident,
     args: &PyClassArgs,
     doc: Option<PythonDoc>,
-    field_options: Vec<(&syn::Field, FieldPyO3Options)>,
+    field_options: Vec<(&syn::Field, FieldPyForgeOptions)>,
     methods_type: PyClassMethodsType,
     ctx: &Ctx,
 ) -> Result<TokenStream> {
@@ -623,7 +623,7 @@ impl<'a> PyClassSimpleEnum<'a> {
                 Fields::Unit => &variant.ident,
                 _ => bail_spanned!(variant.span() => "Must be a unit variant."),
             };
-            let options = EnumVariantPyO3Options::take_pyo3_options(&mut variant.attrs)?;
+            let options = EnumVariantPyForgeOptions::take_pyo3_options(&mut variant.attrs)?;
             Ok(PyClassEnumUnitVariant {
                 ident,
                 options,
@@ -681,7 +681,7 @@ impl<'a> PyClassComplexEnum<'a> {
             |variant: &'a mut syn::Variant| -> syn::Result<PyClassEnumVariant<'a>> {
                 use syn::Fields;
                 let ident = &variant.ident;
-                let options = EnumVariantPyO3Options::take_pyo3_options(&mut variant.attrs)?;
+                let options = EnumVariantPyForgeOptions::take_pyo3_options(&mut variant.attrs)?;
 
                 let variant = match &variant.fields {
                     Fields::Unit => {
@@ -753,7 +753,7 @@ enum PyClassEnumVariant<'a> {
 
 trait EnumVariant {
     fn get_ident(&self) -> &syn::Ident;
-    fn get_options(&self) -> &EnumVariantPyO3Options;
+    fn get_options(&self) -> &EnumVariantPyForgeOptions;
     fn get_attrs(&self) -> &[syn::Attribute];
 
     fn get_python_name(&self, args: &PyClassArgs) -> Cow<'_, syn::Ident> {
@@ -781,7 +781,7 @@ impl EnumVariant for PyClassEnumVariant<'_> {
         }
     }
 
-    fn get_options(&self) -> &EnumVariantPyO3Options {
+    fn get_options(&self) -> &EnumVariantPyForgeOptions {
         match self {
             Self::Struct(struct_variant) => &struct_variant.options,
             Self::Tuple(tuple_variant) => &tuple_variant.options,
@@ -799,7 +799,7 @@ impl EnumVariant for PyClassEnumVariant<'_> {
 /// A unit variant has no fields
 struct PyClassEnumUnitVariant<'a> {
     ident: &'a syn::Ident,
-    options: EnumVariantPyO3Options,
+    options: EnumVariantPyForgeOptions,
     attrs: Vec<syn::Attribute>,
 }
 
@@ -808,7 +808,7 @@ impl EnumVariant for PyClassEnumUnitVariant<'_> {
         self.ident
     }
 
-    fn get_options(&self) -> &EnumVariantPyO3Options {
+    fn get_options(&self) -> &EnumVariantPyForgeOptions {
         &self.options
     }
 
@@ -821,7 +821,7 @@ impl EnumVariant for PyClassEnumUnitVariant<'_> {
 struct PyClassEnumStructVariant<'a> {
     ident: &'a syn::Ident,
     fields: Vec<PyClassEnumVariantNamedField<'a>>,
-    options: EnumVariantPyO3Options,
+    options: EnumVariantPyForgeOptions,
     attrs: Vec<syn::Attribute>,
 }
 
@@ -838,7 +838,7 @@ impl PyClassEnumStructVariant<'_> {
 struct PyClassEnumTupleVariant<'a> {
     ident: &'a syn::Ident,
     fields: Vec<PyClassEnumVariantUnnamedField<'a>>,
-    options: EnumVariantPyO3Options,
+    options: EnumVariantPyForgeOptions,
     attrs: Vec<syn::Attribute>,
 }
 
@@ -867,32 +867,32 @@ struct PyClassEnumVariantUnnamedField<'a> {
 
 /// `#[pyo3()]` options for pyclass enum variants
 #[derive(Clone, Default)]
-struct EnumVariantPyO3Options {
+struct EnumVariantPyForgeOptions {
     name: Option<NameAttribute>,
     constructor: Option<ConstructorAttribute>,
 }
 
-enum EnumVariantPyO3Option {
+enum EnumVariantPyForgeOption {
     Name(NameAttribute),
     Constructor(ConstructorAttribute),
 }
 
-impl Parse for EnumVariantPyO3Option {
+impl Parse for EnumVariantPyForgeOption {
     fn parse(input: ParseStream<'_>) -> Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(attributes::kw::name) {
-            input.parse().map(EnumVariantPyO3Option::Name)
+            input.parse().map(EnumVariantPyForgeOption::Name)
         } else if lookahead.peek(attributes::kw::constructor) {
-            input.parse().map(EnumVariantPyO3Option::Constructor)
+            input.parse().map(EnumVariantPyForgeOption::Constructor)
         } else {
             Err(lookahead.error())
         }
     }
 }
 
-impl EnumVariantPyO3Options {
+impl EnumVariantPyForgeOptions {
     fn take_pyo3_options(attrs: &mut Vec<syn::Attribute>) -> Result<Self> {
-        let mut options = EnumVariantPyO3Options::default();
+        let mut options = EnumVariantPyForgeOptions::default();
 
         take_pyo3_options(attrs)?
             .into_iter()
@@ -901,7 +901,7 @@ impl EnumVariantPyO3Options {
         Ok(options)
     }
 
-    fn set_option(&mut self, option: EnumVariantPyO3Option) -> syn::Result<()> {
+    fn set_option(&mut self, option: EnumVariantPyForgeOption) -> syn::Result<()> {
         macro_rules! set_option {
             ($key:ident) => {
                 {
@@ -915,8 +915,8 @@ impl EnumVariantPyO3Options {
         }
 
         match option {
-            EnumVariantPyO3Option::Constructor(constructor) => set_option!(constructor),
-            EnumVariantPyO3Option::Name(name) => set_option!(name),
+            EnumVariantPyForgeOption::Constructor(constructor) => set_option!(constructor),
+            EnumVariantPyForgeOption::Name(name) => set_option!(name),
         }
         Ok(())
     }
@@ -977,7 +977,7 @@ fn implement_py_formatting(
 }
 
 fn implement_pyclass_str(
-    options: &PyClassPyO3Options,
+    options: &PyClassPyForgeOptions,
     ty: &syn::Type,
     ctx: &Ctx,
 ) -> (Option<ImplItemFn>, Option<MethodAndSlotDef>) {
@@ -1314,7 +1314,7 @@ fn impl_complex_enum(
             class_kind: PyClassKind::Struct,
             // TODO(mkovaxx): propagate variant.options
             options: {
-                let mut rigged_options: PyClassPyO3Options = parse_quote!(extends = #cls, frozen);
+                let mut rigged_options: PyClassPyForgeOptions = parse_quote!(extends = #cls, frozen);
                 // If a specific module was given to the base class, use it for all variants.
                 rigged_options.module.clone_from(&args.options.module);
                 rigged_options
@@ -2178,13 +2178,13 @@ fn descriptors_to_items(
     cls: &Ident,
     rename_all: Option<&RenameAllAttribute>,
     frozen: Option<frozen>,
-    field_options: Vec<(&syn::Field, FieldPyO3Options)>,
+    field_options: Vec<(&syn::Field, FieldPyForgeOptions)>,
     ctx: &Ctx,
 ) -> Result<Vec<MethodAndMethodDef>> {
     let ty = syn::parse_quote!(#cls);
     let mut items = Vec::new();
     for (field_index, (field, options)) in field_options.into_iter().enumerate() {
-        if let FieldPyO3Options {
+        if let FieldPyForgeOptions {
             name: Some(name),
             get: None,
             set: None,
@@ -2323,7 +2323,7 @@ fn impl_pytypeinfo(cls: &Ident, attr: &PyClassArgs, ctx: &Ctx) -> TokenStream {
 }
 
 fn pyclass_richcmp_arms(
-    options: &PyClassPyO3Options,
+    options: &PyClassPyForgeOptions,
     ctx: &Ctx,
 ) -> std::result::Result<TokenStream, syn::Error> {
     let Ctx { pyo3_path, .. } = ctx;
@@ -2375,7 +2375,7 @@ fn pyclass_richcmp_arms(
 }
 
 fn pyclass_richcmp_simple_enum(
-    options: &PyClassPyO3Options,
+    options: &PyClassPyForgeOptions,
     cls: &syn::Type,
     repr_type: &syn::Ident,
     ctx: &Ctx,
@@ -2470,7 +2470,7 @@ fn pyclass_richcmp_simple_enum(
 }
 
 fn pyclass_richcmp(
-    options: &PyClassPyO3Options,
+    options: &PyClassPyForgeOptions,
     cls: &syn::Type,
     ctx: &Ctx,
 ) -> Result<(Option<syn::ImplItemFn>, Option<MethodAndSlotDef>)> {
@@ -2531,7 +2531,7 @@ fn pyclass_richcmp(
 }
 
 fn pyclass_hash(
-    options: &PyClassPyO3Options,
+    options: &PyClassPyForgeOptions,
     cls: &syn::Type,
     ctx: &Ctx,
 ) -> Result<(Option<syn::ImplItemFn>, Option<MethodAndSlotDef>)> {
@@ -2571,7 +2571,7 @@ fn pyclass_hash(
 }
 
 fn pyclass_new_impl<'a>(
-    options: &PyClassPyO3Options,
+    options: &PyClassPyForgeOptions,
     ty: &syn::Type,
     fields: impl Iterator<Item = &'a &'a syn::Field>,
     ctx: &Ctx,
@@ -2660,7 +2660,7 @@ fn pyclass_new_impl<'a>(
 }
 
 fn pyclass_class_getitem(
-    options: &PyClassPyO3Options,
+    options: &PyClassPyForgeOptions,
     cls: &syn::Type,
     ctx: &Ctx,
 ) -> Result<(Option<syn::ImplItemFn>, Option<MethodAndMethodDef>)> {

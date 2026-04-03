@@ -192,7 +192,7 @@ pub fn unwrap_ty_group(mut ty: &syn::Type) -> &syn::Type {
 
 pub struct Ctx {
     /// Where we can find the pyo3 crate
-    pub pyo3_path: PyO3CratePath,
+    pub pyo3_path: PyForgeCratePath,
 
     /// If we are in a pymethod or pyfunction,
     /// this will be the span of the return type
@@ -202,8 +202,8 @@ pub struct Ctx {
 impl Ctx {
     pub(crate) fn new(attr: &Option<CrateAttribute>, signature: Option<&syn::Signature>) -> Self {
         let pyo3_path = match attr {
-            Some(attr) => PyO3CratePath::Given(attr.value.0.clone()),
-            None => PyO3CratePath::Default,
+            Some(attr) => PyForgeCratePath::Given(attr.value.0.clone()),
+            None => PyForgeCratePath::Default,
         };
 
         let output_span = if let Some(syn::Signature {
@@ -224,12 +224,12 @@ impl Ctx {
 }
 
 #[derive(Clone)]
-pub enum PyO3CratePath {
+pub enum PyForgeCratePath {
     Given(syn::Path),
     Default,
 }
 
-impl PyO3CratePath {
+impl PyForgeCratePath {
     pub fn to_tokens_spanned(&self, span: Span) -> TokenStream {
         match self {
             Self::Given(path) => quote::quote_spanned! { span => #path },
@@ -238,7 +238,7 @@ impl PyO3CratePath {
     }
 }
 
-impl quote::ToTokens for PyO3CratePath {
+impl quote::ToTokens for PyForgeCratePath {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
             Self::Given(path) => path.to_tokens(tokens),
@@ -273,18 +273,18 @@ pub(crate) fn has_attribute(attrs: &[syn::Attribute], ident: &str) -> bool {
 
 pub(crate) fn has_attribute_with_namespace(
     attrs: &[syn::Attribute],
-    crate_path: Option<&PyO3CratePath>,
+    crate_path: Option<&PyForgeCratePath>,
     idents: &[&str],
 ) -> bool {
     let mut segments = vec![];
     if let Some(c) = crate_path {
         match c {
-            PyO3CratePath::Given(paths) => {
+            PyForgeCratePath::Given(paths) => {
                 for p in &paths.segments {
                     segments.push(IdentOrStr::Ident(p.ident.clone()));
                 }
             }
-            PyO3CratePath::Default => segments.push(IdentOrStr::Str("pyforge")),
+            PyForgeCratePath::Default => segments.push(IdentOrStr::Str("pyforge")),
         }
     };
     for i in idents {

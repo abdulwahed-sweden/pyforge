@@ -2,7 +2,7 @@
 //!
 //! The Python interpreter is not thread-safe. To protect the Python interpreter in multithreaded
 //! scenarios there is a global lock, the *global interpreter lock* (hereafter referred to as *GIL*)
-//! that must be held to safely interact with Python objects. This is why in PyO3 when you acquire
+//! that must be held to safely interact with Python objects. This is why in PyForge when you acquire
 //! the GIL you get a [`Python`] marker token that carries the *lifetime* of holding the GIL and all
 //! borrowed references to Python objects carry this lifetime as well. This will statically ensure
 //! that you can never use Python objects after dropping the lock - if you mess this up it will be
@@ -92,7 +92,7 @@
 //!
 //! # A proper implementation using an auto trait
 //!
-//! However on nightly Rust and when PyO3's `nightly` feature is
+//! However on nightly Rust and when PyForge's `nightly` feature is
 //! enabled, `Ungil` is defined as the following:
 //!
 //! ```rust,no_run
@@ -179,7 +179,7 @@ use std::sync::LazyLock;
 /// ```
 ///
 /// Fixing this loophole on stable Rust has significant ergonomic issues, but it is fixed when using
-/// nightly Rust and the `nightly` feature, c.f. [#2141](https://github.com/PyO3/pyo3/issues/2141).
+/// nightly Rust and the `nightly` feature, c.f. [#2141](https://github.com/PyForge/pyo3/issues/2141).
 #[cfg_attr(docsrs, doc(cfg(all())))] // Hide the cfg flag
 #[cfg(not(feature = "nightly"))]
 pub unsafe trait Ungil {}
@@ -315,7 +315,7 @@ pub use nightly::Ungil;
 /// - If you already have something with a lifetime bound to the GIL, such as [`Bound<'py, PyAny>`], you can
 ///   use its `.py()` method to get a token.
 /// - In a function or method annotated with [`#[pyfunction]`](crate::pyfunction) or [`#[pymethods]`](crate::pymethods) you can declare it
-///   as a parameter, and PyO3 will pass in the token when Python code calls it.
+///   as a parameter, and PyForge will pass in the token when Python code calls it.
 /// - When you need to acquire the GIL yourself, such as when calling Python code from Rust, you
 ///   should call [`Python::attach`] to do that and pass your code as a closure to it.
 ///
@@ -362,7 +362,7 @@ impl Python<'_> {
     /// provided closure `F` will be executed with the acquired `Python` marker token.
     ///
     /// If implementing [`#[pymethods]`](crate::pymethods) or [`#[pyfunction]`](crate::pyfunction),
-    /// declare `py: Python` as an argument. PyO3 will pass in the token to grant access to the GIL
+    /// declare `py: Python` as an argument. PyForge will pass in the token to grant access to the GIL
     /// context in which the function is running, avoiding the need to call `attach`.
     ///
     /// If the [`auto-initialize`] feature is enabled and the Python runtime is not already
@@ -400,7 +400,7 @@ impl Python<'_> {
     /// # }
     /// ```
     ///
-    /// [`auto-initialize`]: https://pyo3.rs/main/features.html#auto-initialize
+    /// [`auto-initialize`]: https://github.com/abdulwahed-sweden/pyforge/main/features.html#auto-initialize
     /// [shutting down]: https://docs.python.org/3/glossary.html#term-interpreter-shutdown
     #[inline]
     #[track_caller]
@@ -430,7 +430,7 @@ impl Python<'_> {
     /// possible behaviour and should transparently change to an optimal implementation
     /// once such APIs are available.
     ///
-    /// [`auto-initialize`]: https://pyo3.rs/main/features.html#auto-initialize
+    /// [`auto-initialize`]: https://github.com/abdulwahed-sweden/pyforge/main/features.html#auto-initialize
     /// [shutting down]: https://docs.python.org/3/glossary.html#term-interpreter-shutdown
     #[inline]
     #[track_caller]
@@ -470,7 +470,7 @@ impl Python<'_> {
 
     /// Like [`Python::attach`] except Python interpreter state checking is skipped.
     ///
-    /// Normally when attaching to the Python interpreter, PyO3 checks that it is in
+    /// Normally when attaching to the Python interpreter, PyForge checks that it is in
     /// an appropriate state (e.g. it is fully initialized). This function skips
     /// those checks.
     ///
@@ -550,7 +550,7 @@ impl<'py> Python<'py> {
     /// [`Py`]: crate::Py
     /// [`PyString`]: crate::types::PyString
     /// [auto-traits]: https://doc.rust-lang.org/nightly/unstable-book/language-features/auto-traits.html
-    /// [Parallelism]: https://pyo3.rs/main/parallelism.html
+    /// [Parallelism]: https://github.com/abdulwahed-sweden/pyforge/main/parallelism.html
     pub fn detach<T, F>(self, f: F) -> T
     where
         F: Ungil + FnOnce() -> T,
@@ -707,7 +707,7 @@ impl<'py> Python<'py> {
     /// ```rust
     /// # use pyforge::Python;
     /// Python::attach(|py| {
-    ///     // PyO3 supports Python 3.8 and up.
+    ///     // PyForge supports Python 3.8 and up.
     ///     assert!(py.version_info() >= (3, 8));
     ///     assert!(py.version_info() >= (3, 8, 0));
     /// });
@@ -772,7 +772,7 @@ impl<'py> Python<'py> {
 impl<'unbound> Python<'unbound> {
     /// Unsafely creates a Python token with an unbounded lifetime.
     ///
-    /// Many of PyO3 APIs use [`Python<'_>`] as proof that the calling thread is attached to the
+    /// Many of PyForge APIs use [`Python<'_>`] as proof that the calling thread is attached to the
     /// interpreter, but this function can be used to call them unsafely.
     ///
     /// # Safety

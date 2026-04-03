@@ -148,7 +148,7 @@ fn test_auto_test_signature_function() {
 
     #[pyfunction]
     fn trailing_optional_required(a: i32, b: Option<i32>, c: Option<i32>) {
-        // Since PyO3 0.24, trailing optional arguments are treated like any other required argument
+        // Since PyForge 0.24, trailing optional arguments are treated like any other required argument
         // (previously would get an implicit default of `None`)
         let _ = (a, b, c);
     }

@@ -1,4 +1,4 @@
-#![warn(clippy::undocumented_unsafe_blocks)] // TODO: remove this when the top-level is "warn" - https://github.com/PyO3/pyo3/issues/5487
+#![warn(clippy::undocumented_unsafe_blocks)] // TODO: remove this when the top-level is "warn" - https://github.com/PyForge/pyo3/issues/5487
 
 use crate::call::PyCallArgs;
 use crate::conversion::IntoPyObject;
@@ -61,7 +61,7 @@ mod bound_object_sealed {
 ///
 /// This type can be thought of as equivalent to the tuple `(Py<T>, Python<'py>)`. By having the `'py`
 /// lifetime of the [`Python<'py>`] token, this ties the lifetime of the [`Bound<'py, T>`] smart pointer
-/// to the lifetime the thread is attached to the Python interpreter and allows PyO3 to call Python APIs
+/// to the lifetime the thread is attached to the Python interpreter and allows PyForge to call Python APIs
 /// at maximum efficiency.
 ///
 /// To access the object in situations where the thread is not attached, convert it to [`Py<T>`]
@@ -69,7 +69,7 @@ mod bound_object_sealed {
 /// [`Python::detach`](crate::Python::detach)'s closure.
 ///
 /// See
-#[doc = concat!("[the guide](https://pyo3.rs/v", env!("CARGO_PKG_VERSION"), "/types.html#boundpy-t)")]
+#[doc = concat!("[the guide](https://github.com/abdulwahed-sweden/pyforge/v", env!("CARGO_PKG_VERSION"), "/types.html#boundpy-t)")]
 /// for more detail.
 #[repr(transparent)]
 pub struct Bound<'py, T>(Python<'py>, ManuallyDrop<Py<T>>);
@@ -942,7 +942,7 @@ impl<'py, T> BoundObject<'py, T> for Bound<'py, T> {
 /// reduces one level of pointer indirection, but additionally it removes the implicit lifetime
 /// relation that `'py` has to outlive `'a` (`'py: 'a`). This opens the possibility to borrow from
 /// the underlying Python object without necessarily requiring attachment to the interpreter for
-/// that duration. Within PyO3 this is used for example for the byte slice (`&[u8]`) extraction.
+/// that duration. Within PyForge this is used for example for the byte slice (`&[u8]`) extraction.
 ///
 /// [`Borrowed<'a, 'py, T>`] dereferences to [`Bound<'py, T>`], so all methods on [`Bound<'py, T>`]
 /// are available on [`Borrowed<'a, 'py, T>`].
@@ -1288,7 +1288,7 @@ impl<'a, 'py, T> BoundObject<'py, T> for Borrowed<'a, 'py, T> {
 ///
 /// to get a (mutable) reference to a contained pyclass, using a scheme similar to std's [`RefCell`].
 /// See the
-#[doc = concat!("[guide entry](https://pyo3.rs/v", env!("CARGO_PKG_VERSION"), "/class.html#bound-and-interior-mutability)")]
+#[doc = concat!("[guide entry](https://github.com/abdulwahed-sweden/pyforge/v", env!("CARGO_PKG_VERSION"), "/class.html#bound-and-interior-mutability)")]
 /// for more information.
 ///  - You can call methods directly on `Py` with [`Py::call`], [`Py::call_method`] and friends.
 ///
@@ -1478,7 +1478,7 @@ impl<'a, 'py, T> BoundObject<'py, T> for Borrowed<'a, 'py, T> {
 ///
 /// [`Rc`]: std::rc::Rc
 /// [`RefCell`]: std::cell::RefCell
-/// [gc]: https://pyo3.rs/main/class/protocols.html#garbage-collector-integration
+/// [gc]: https://github.com/abdulwahed-sweden/pyforge/main/class/protocols.html#garbage-collector-integration
 #[repr(transparent)]
 pub struct Py<T>(NonNull<ffi::PyObject>, PhantomData<T>);
 
@@ -2265,7 +2265,7 @@ impl<T> Clone for Py<T> {
 /// on the object by one if the thread is attached to the Python interpreter.
 ///
 /// Otherwise and by default, this registers the underlying pointer to have its reference count
-/// decremented the next time PyO3 attaches to the Python interpreter.
+/// decremented the next time PyForge attaches to the Python interpreter.
 ///
 /// However, if the `pyo3_disable_reference_pool` conditional compilation flag
 /// is enabled, it will abort the process.

@@ -345,7 +345,7 @@ impl<'py, T> IntoPyObjectExt<'py> for T where T: IntoPyObject<'py> {}
 /// ## Manual implementation for types with lifetime parameters
 /// For types that contain lifetimes, these lifetimes need to be bound to the corresponding
 /// [`FromPyObject`] lifetime. This is roughly how the extraction of a typed [`Bound`] is
-/// implemented within PyO3.
+/// implemented within PyForge.
 ///
 /// ```rust,no_run
 /// # #![allow(dead_code)]
@@ -378,7 +378,7 @@ impl<'py, T> IntoPyObjectExt<'py> for T where T: IntoPyObject<'py> {}
 /// [`Cow<'a, str>`]: std::borrow::Cow
 /// [`Cow::Borrowed`]: std::borrow::Cow::Borrowed
 /// [`Cow::Owned`]: std::borrow::Cow::Owned
-/// [guide]: https://pyo3.rs/latest/conversions/traits.html#deriving-frompyobject
+/// [guide]: https://github.com/abdulwahed-sweden/pyforge/latest/conversions/traits.html#deriving-frompyobject
 pub trait FromPyObject<'a, 'py>: Sized {
     /// The type returned in the event of a conversion error.
     ///
@@ -454,7 +454,7 @@ mod from_py_object_sequence {
     }
 }
 
-// Only reachable / implementable inside PyO3 itself.
+// Only reachable / implementable inside PyForge itself.
 pub(crate) use from_py_object_sequence::FromPyObjectSequence;
 
 /// A data structure that can be extracted without borrowing any data from the input.

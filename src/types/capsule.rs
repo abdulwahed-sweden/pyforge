@@ -19,7 +19,7 @@ use std::ptr::{self, NonNull};
 /// > in one module available to other modules, so the regular import mechanism can
 /// > be used to access C APIs defined in dynamically loaded modules.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyCapsule>`][crate::Py] or [`Bound<'py, PyCapsule>`][Bound].
 ///
 /// For APIs available on capsule objects, see the [`PyCapsuleMethods`] trait which is implemented for

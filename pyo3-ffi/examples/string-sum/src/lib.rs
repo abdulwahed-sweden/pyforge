@@ -91,7 +91,7 @@ pub unsafe extern "C" fn PyModExport_string_sum() -> *mut PyModuleDef_Slot {
 }
 
 /// A helper to parse function arguments
-/// If we used PyO3's proc macros they'd handle all of this boilerplate for us :)
+/// If we used PyForge's proc macros they'd handle all of this boilerplate for us :)
 unsafe fn parse_arg_as_i32(obj: *mut PyObject, n_arg: usize) -> Option<i32> {
     if PyLong_Check(obj) == 0 {
         let msg = format!(

@@ -13,8 +13,8 @@
 //! bigdecimal = "0.4"
 //! ```
 //!
-//! Note that you must use a compatible version of bigdecimal and PyO3.
-//! The required bigdecimal version may vary based on the version of PyO3.
+//! Note that you must use a compatible version of bigdecimal and PyForge.
+//! The required bigdecimal version may vary based on the version of PyForge.
 //!
 //! # Example
 //!

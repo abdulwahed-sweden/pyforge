@@ -18,7 +18,7 @@ impl ExampleClass {
     }
 }
 
-/// An example module implemented in Rust using PyO3.
+/// An example module implemented in Rust using PyForge.
 #[pymodule]
 fn maturin_starter(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<ExampleClass>()?;

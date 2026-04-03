@@ -74,7 +74,7 @@ pub use self::weakref::{PyWeakref, PyWeakrefMethods, PyWeakrefProxy, PyWeakrefRe
 /// # }
 ///  ```
 ///
-/// If PyO3 detects that the collection is mutated during iteration, it will panic.
+/// If PyForge detects that the collection is mutated during iteration, it will panic.
 ///
 /// These iterators use Python's C-API directly. However in certain cases, like when compiling for
 /// the Limited API and PyPy, the underlying structures are opaque and that may not be possible.

@@ -1,6 +1,6 @@
 //! Define a data structure for Python type hints, mixing static data from macros and call to Pyo3 constants.
 
-use crate::utils::PyO3CratePath;
+use crate::utils::PyForgeCratePath;
 use proc_macro2::TokenStream;
 use quote::quote;
 use std::borrow::Cow;
@@ -174,7 +174,7 @@ impl PyExpr {
         Self::Constant(PyConstant::Ellipsis)
     }
 
-    pub fn to_introspection_token_stream(&self, pyo3_crate_path: &PyO3CratePath) -> TokenStream {
+    pub fn to_introspection_token_stream(&self, pyo3_crate_path: &PyForgeCratePath) -> TokenStream {
         match self {
             Self::FromPyObjectType(t) => {
                 quote! { <#t as #pyo3_crate_path::FromPyObject<'_, '_>>::INPUT_TYPE }

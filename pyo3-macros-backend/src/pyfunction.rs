@@ -29,33 +29,33 @@ mod signature;
 pub use self::signature::{ConstructorAttribute, FunctionSignature, SignatureAttribute};
 
 #[derive(Clone, Debug)]
-pub struct PyFunctionArgPyO3Attributes {
+pub struct PyFunctionArgPyForgeAttributes {
     pub from_py_with: Option<FromPyWithAttribute>,
     pub cancel_handle: Option<attributes::kw::cancel_handle>,
 }
 
-enum PyFunctionArgPyO3Attribute {
+enum PyFunctionArgPyForgeAttribute {
     FromPyWith(FromPyWithAttribute),
     CancelHandle(attributes::kw::cancel_handle),
 }
 
-impl Parse for PyFunctionArgPyO3Attribute {
+impl Parse for PyFunctionArgPyForgeAttribute {
     fn parse(input: ParseStream<'_>) -> Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(attributes::kw::cancel_handle) {
-            input.parse().map(PyFunctionArgPyO3Attribute::CancelHandle)
+            input.parse().map(PyFunctionArgPyForgeAttribute::CancelHandle)
         } else if lookahead.peek(attributes::kw::from_py_with) {
-            input.parse().map(PyFunctionArgPyO3Attribute::FromPyWith)
+            input.parse().map(PyFunctionArgPyForgeAttribute::FromPyWith)
         } else {
             Err(lookahead.error())
         }
     }
 }
 
-impl PyFunctionArgPyO3Attributes {
+impl PyFunctionArgPyForgeAttributes {
     /// Parses #[pyo3(from_python_with = "func")]
     pub fn from_attrs(attrs: &mut Vec<syn::Attribute>) -> syn::Result<Self> {
-        let mut attributes = PyFunctionArgPyO3Attributes {
+        let mut attributes = PyFunctionArgPyForgeAttributes {
             from_py_with: None,
             cancel_handle: None,
         };
@@ -63,14 +63,14 @@ impl PyFunctionArgPyO3Attributes {
             if let Some(pyo3_attrs) = get_pyo3_options(attr)? {
                 for attr in pyo3_attrs {
                     match attr {
-                        PyFunctionArgPyO3Attribute::FromPyWith(from_py_with) => {
+                        PyFunctionArgPyForgeAttribute::FromPyWith(from_py_with) => {
                             ensure_spanned!(
                                 attributes.from_py_with.is_none(),
                                 from_py_with.span() => "`from_py_with` may only be specified once per argument"
                             );
                             attributes.from_py_with = Some(from_py_with);
                         }
-                        PyFunctionArgPyO3Attribute::CancelHandle(cancel_handle) => {
+                        PyFunctionArgPyForgeAttribute::CancelHandle(cancel_handle) => {
                             ensure_spanned!(
                                 attributes.cancel_handle.is_none(),
                                 cancel_handle.span() => "`cancel_handle` may only be specified once per argument"

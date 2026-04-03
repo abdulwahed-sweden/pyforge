@@ -1,11 +1,11 @@
 [package]
 name = "pyforge-introspection"
-version = "0.30.0"
+version = "0.1.0"
 description = "Introspect dynamic libraries built with PyForge to extract Python type metadata"
 authors = ["Abdulwahed Mansour"]
 homepage = "https://github.com/abdulwahed-sweden/pyforge"
 repository = "https://github.com/abdulwahed-sweden/pyforge"
-license = "MIT OR Apache-2.0"
+license = "MIT"
 edition = "2021"
 
 [dependencies]

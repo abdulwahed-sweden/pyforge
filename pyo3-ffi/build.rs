@@ -8,7 +8,7 @@ use pyforge_build_config::{
     warn, PythonImplementation,
 };
 
-/// Minimum Python version PyO3 supports.
+/// Minimum Python version PyForge supports.
 struct SupportedVersions {
     min: PythonVersion,
     max: PythonVersion,
@@ -50,7 +50,7 @@ fn ensure_python_version(interpreter_config: &InterpreterConfig) -> Result<()> {
             let versions = SUPPORTED_VERSIONS_CPYTHON;
             ensure!(
                 interpreter_config.version >= versions.min,
-                "the configured Python interpreter version ({}) is lower than PyO3's minimum supported version ({})",
+                "the configured Python interpreter version ({}) is lower than PyForge's minimum supported version ({})",
                 interpreter_config.version,
                 versions.min,
             );
@@ -88,7 +88,7 @@ fn ensure_python_version(interpreter_config: &InterpreterConfig) -> Result<()> {
                 };
                 ensure!(
                     interpreter_config.version >= min_free_threaded_version,
-                    "PyO3 does not support the free-threaded build of CPython versions below {}, the selected Python version is {}",
+                    "PyForge does not support the free-threaded build of CPython versions below {}, the selected Python version is {}",
                     min_free_threaded_version,
                     interpreter_config.version,
                 );
@@ -98,11 +98,11 @@ fn ensure_python_version(interpreter_config: &InterpreterConfig) -> Result<()> {
             let versions = SUPPORTED_VERSIONS_PYPY;
             ensure!(
                 interpreter_config.version >= versions.min,
-                "the configured PyPy interpreter version ({}) is lower than PyO3's minimum supported version ({})",
+                "the configured PyPy interpreter version ({}) is lower than PyForge's minimum supported version ({})",
                 interpreter_config.version,
                 versions.min,
             );
-            // PyO3 does not support abi3, so we cannot offer forward compatibility
+            // PyForge does not support abi3, so we cannot offer forward compatibility
             if interpreter_config.version > versions.max {
                 let error = MaximumVersionExceeded::new(interpreter_config, versions.max);
                 return Err(error.finish().into());
@@ -112,7 +112,7 @@ fn ensure_python_version(interpreter_config: &InterpreterConfig) -> Result<()> {
             let versions = SUPPORTED_VERSIONS_GRAALPY;
             ensure!(
                 interpreter_config.version >= versions.min,
-                "the configured GraalPy interpreter version ({}) is lower than PyO3's minimum supported version ({})",
+                "the configured GraalPy interpreter version ({}) is lower than PyForge's minimum supported version ({})",
                 interpreter_config.version,
                 versions.min,
             );
@@ -211,7 +211,7 @@ fn emit_link_config(build_config: &BuildConfig) -> Result<()> {
     Ok(())
 }
 
-/// Prepares the PyO3 crate for compilation.
+/// Prepares the PyForge crate for compilation.
 ///
 /// This loads the config from pyo3-build-config and then makes some additional checks to improve UX
 /// for users.

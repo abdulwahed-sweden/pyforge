@@ -50,7 +50,7 @@ fn test_optional_bool() {
 
 #[test]
 fn test_trailing_optional_no_signature() {
-    // Since PyO3 0.24, trailing optional arguments are treated like any other required argument
+    // Since PyForge 0.24, trailing optional arguments are treated like any other required argument
     // (previously would get an implicit default of `None`)
 
     #[pyfunction]
@@ -643,7 +643,7 @@ fn test_some_wrap_arguments() {
     // Option<T> arguments get special treatment in pyfunction default values where it's
     // valid to pass the inner type without wrapping in `Some()`.
     //
-    // See also https://github.com/PyO3/pyo3/issues/3460
+    // See also https://github.com/PyForge/pyo3/issues/3460
     const NONE: Option<u8> = None;
     #[pyfunction(signature = (a = 1, b = Some(2), c = None, d = NONE))]
     fn some_wrap_arguments(

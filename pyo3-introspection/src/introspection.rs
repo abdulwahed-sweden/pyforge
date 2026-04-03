@@ -17,7 +17,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::{fs, str};
 
-/// Introspect a cdylib built with PyO3 and returns the definition of a Python module.
+/// Introspect a cdylib built with PyForge and returns the definition of a Python module.
 ///
 /// This function currently supports the ELF (most *nix including Linux), Match-O (macOS) and PE (Windows) formats.
 pub fn introspect_cdylib(library_path: impl AsRef<Path>, main_module_name: &str) -> Result<Module> {
@@ -565,7 +565,7 @@ fn find_introspection_chunks_in_elf(elf: &Elf<'_>, library_content: &[u8]) -> Re
     let mut chunks = Vec::new();
     for sym in &elf.syms {
         if is_introspection_symbol(elf.strtab.get_at(sym.st_name).unwrap_or_default()) {
-            ensure!(u32::try_from(sym.st_shndx)? != SHN_XINDEX, "Section names length is greater than SHN_LORESERVE in ELF, this is not supported by PyO3 yet");
+            ensure!(u32::try_from(sym.st_shndx)? != SHN_XINDEX, "Section names length is greater than SHN_LORESERVE in ELF, this is not supported by PyForge yet");
             let section_header = &elf.section_headers[sym.st_shndx];
             let data_offset = sym.st_value + section_header.sh_offset - section_header.sh_addr;
             chunks.push(deserialize_chunk(

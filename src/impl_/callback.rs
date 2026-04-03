@@ -12,7 +12,7 @@ pub trait PyCallbackOutput: Copy + py_callback_output::Sealed {
     const ERR_VALUE: Self;
 }
 
-/// Seals `PyCallbackOutput` so that types outside PyO3 cannot implement it.
+/// Seals `PyCallbackOutput` so that types outside PyForge cannot implement it.
 mod py_callback_output {
     use std::os::raw::c_int;
 
@@ -44,7 +44,7 @@ pub trait IntoPyCallbackOutput<'py, Target>: into_py_callback_output::Sealed<'py
     fn convert(self, py: Python<'py>) -> PyResult<Target>;
 }
 
-/// Seals `IntoPyCallbackOutput` so that types outside PyO3 cannot implement it.
+/// Seals `IntoPyCallbackOutput` so that types outside PyForge cannot implement it.
 mod into_py_callback_output {
     use pyforge_ffi::Py_hash_t;
 
@@ -164,7 +164,7 @@ pub trait WrappingCastTo<T>: wrapping_cast_to::Sealed<T> {
     fn wrapping_cast(self) -> T;
 }
 
-/// Seals `WrappingCastTo` so that types outside PyO3 cannot implement it.
+/// Seals `WrappingCastTo` so that types outside PyForge cannot implement it.
 mod wrapping_cast_to {
     pub trait Sealed<T> {}
 }

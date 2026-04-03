@@ -9,7 +9,7 @@ use crate::introspection::{attribute_introspection_code, function_introspection_
 use crate::method::{FnSpec, FnType};
 #[cfg(feature = "experimental-inspect")]
 use crate::py_expr::PyExpr;
-use crate::utils::{has_attribute, has_attribute_with_namespace, Ctx, PyO3CratePath};
+use crate::utils::{has_attribute, has_attribute_with_namespace, Ctx, PyForgeCratePath};
 use crate::{
     attributes::{take_pyo3_options, CrateAttribute},
     konst::{ConstAttributes, ConstSpec},
@@ -35,15 +35,15 @@ pub enum PyClassMethodsType {
     Inventory,
 }
 
-enum PyImplPyO3Option {
+enum PyImplPyForgeOption {
     Crate(CrateAttribute),
 }
 
-impl Parse for PyImplPyO3Option {
+impl Parse for PyImplPyForgeOption {
     fn parse(input: ParseStream<'_>) -> Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(syn::Token![crate]) {
-            input.parse().map(PyImplPyO3Option::Crate)
+            input.parse().map(PyImplPyForgeOption::Crate)
         } else {
             Err(lookahead.error())
         }
@@ -61,7 +61,7 @@ impl PyImplOptions {
 
         for option in take_pyo3_options(attrs)? {
             match option {
-                PyImplPyO3Option::Crate(path) => options.set_crate(path)?,
+                PyImplPyForgeOption::Crate(path) => options.set_crate(path)?,
             }
         }
 
@@ -96,7 +96,7 @@ pub fn build_py_methods(
     }
 }
 
-fn check_pyfunction(pyo3_path: &PyO3CratePath, meth: &mut ImplItemFn) -> syn::Result<()> {
+fn check_pyfunction(pyo3_path: &PyForgeCratePath, meth: &mut ImplItemFn) -> syn::Result<()> {
     let mut error = None;
 
     meth.attrs.retain(|attr| {

@@ -18,7 +18,7 @@ use std::str;
 
 /// Represents a Python [`module`][1] object.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyModule>`][crate::Py] or [`Bound<'py, PyModule>`][Bound].
 ///
 /// For APIs available on `module` objects, see the [`PyModuleMethods`] trait which is implemented for
@@ -60,7 +60,7 @@ impl PyModule {
                 .cast_into_unchecked()
         };
 
-        // By default, PyO3 assumes modules do not use the GIL for thread safety.
+        // By default, PyForge assumes modules do not use the GIL for thread safety.
         module.gil_used(false)?;
 
         Ok(module)
@@ -282,7 +282,7 @@ pub trait PyModuleMethods<'py>: crate::sealed::Sealed {
     /// make an *instance* of `Foo` (or *get* one for that matter, as we haven't exported
     /// anything that can return instances of `Foo`).
     ///
-    #[doc = concat!("[1]: https://pyo3.rs/v", env!("CARGO_PKG_VERSION"), "/class.html#constructor")]
+    #[doc = concat!("[1]: https://github.com/abdulwahed-sweden/pyforge/v", env!("CARGO_PKG_VERSION"), "/class.html#constructor")]
     fn add_class<T>(&self) -> PyResult<()>
     where
         T: PyClass;
@@ -333,8 +333,8 @@ pub trait PyModuleMethods<'py>: crate::sealed::Sealed {
     /// super_useful_constant is important
     /// ```
     ///
-    /// [1]: https://github.com/PyO3/pyo3/issues/759
-    /// [2]: https://github.com/PyO3/pyo3/issues/1517#issuecomment-808664021
+    /// [1]: https://github.com/PyForge/pyo3/issues/759
+    /// [2]: https://github.com/PyForge/pyo3/issues/1517#issuecomment-808664021
     fn add_submodule(&self, module: &Bound<'_, PyModule>) -> PyResult<()>;
 
     /// Add a function to a module.
@@ -375,7 +375,7 @@ pub trait PyModuleMethods<'py>: crate::sealed::Sealed {
 
     /// Declare whether or not this module supports running with the GIL disabled
     ///
-    /// Since PyO3 0.28, PyO3 defaults to assuming that modules do not require the
+    /// Since PyForge 0.28, PyForge defaults to assuming that modules do not require the
     /// GIL for thread safety. Call this function with `true` to opt-out of supporting
     /// free-threaded Python.
     ///

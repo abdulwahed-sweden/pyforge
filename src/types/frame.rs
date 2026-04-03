@@ -8,7 +8,7 @@ use std::ffi::CStr;
 
 /// Represents a Python frame.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyFrame>`][crate::Py] or [`Bound<'py, PyFrame>`][crate::Bound].
 #[repr(transparent)]
 pub struct PyFrame(PyAny);

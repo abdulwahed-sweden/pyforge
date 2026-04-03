@@ -143,19 +143,19 @@ pub fn for_all_fields(input: proc_macro::TokenStream) -> proc_macro::TokenStream
     let bindgen_fields = get_fields_from_file(&bindgen_struct_file);
 
     if pyo3_ffi_fields.is_empty() {
-        // probably an opaque type on PyO3 side, skip
+        // probably an opaque type on PyForge side, skip
         return TokenStream::new().into();
     }
 
     let mut all_fields: HashSet<_> = pyo3_ffi_fields.into_iter().chain(bindgen_fields).collect();
 
     if struct_name == "PyMemberDef" {
-        // bindgen picked `type_` as the field name to avoid the `type` keyword, but PyO3 uses `type_code`
+        // bindgen picked `type_` as the field name to avoid the `type` keyword, but PyForge uses `type_code`
         all_fields.remove("type_");
     } else if struct_name == "PyObject" && pyo3_build_config::get().version >= PythonVersion::PY312
     {
         // bindgen picked `__bindgen_anon_1` as the field name for the anonymous union containing ob_refcnt,
-        // PyO3 uses ob_refcnt directly
+        // PyForge uses ob_refcnt directly
         all_fields.remove("__bindgen_anon_1");
     }
 
@@ -179,7 +179,7 @@ pub fn for_all_fields(input: proc_macro::TokenStream) -> proc_macro::TokenStream
             Ident::new("__bindgen_anon_1", Span::call_site())
         } else if struct_name == "PyMemberDef" && field_name == "type_code" {
             // the field name in the C API is `type`, but that's a keyword in Rust
-            // so PyO3 picked type_code, bindgen picked type_
+            // so PyForge picked type_code, bindgen picked type_
             Ident::new("type_", Span::call_site())
         } else {
             field_ident.clone()

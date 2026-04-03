@@ -11,7 +11,7 @@ use std::num::NonZero;
 
 /// Represents a Python `list`.
 ///
-/// Values of this type are accessed via PyO3's smart pointers, e.g. as
+/// Values of this type are accessed via PyForge's smart pointers, e.g. as
 /// [`Py<PyList>`][crate::Py] or [`Bound<'py, PyList>`][Bound].
 ///
 /// For APIs available on `list` objects, see the [`PyListMethods`] trait which is implemented for
@@ -1489,7 +1489,7 @@ mod tests {
     use std::ops::Range;
 
     // An iterator that lies about its `size_hint` implementation.
-    // See https://github.com/PyO3/pyo3/issues/2118
+    // See https://github.com/PyForge/pyo3/issues/2118
     struct FaultyIter(Range<usize>, usize);
 
     impl Iterator for FaultyIter {

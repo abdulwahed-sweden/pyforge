@@ -169,7 +169,7 @@ fn test_pickle() {
     });
 }
 
-/// Testing https://github.com/PyO3/pyo3/issues/1106. A result type that
+/// Testing https://github.com/PyForge/pyo3/issues/1106. A result type that
 /// implements `From<MyError> for PyErr` should be automatically converted
 /// when using `#[pyfunction]`.
 ///

@@ -1,7 +1,7 @@
 //! Raw FFI declarations for Python's C API.
 //!
 //! This module provides low level bindings to the Python interpreter.
-//! It is meant for advanced users only - regular PyO3 users shouldn't
+//! It is meant for advanced users only - regular PyForge users shouldn't
 //! need to interact with this module at all.
 //!
 //! The contents of this module are not documented here, as it would entail
