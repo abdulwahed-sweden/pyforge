@@ -226,9 +226,6 @@ jobs:
         rust: [stable]
         python-version:
           [
-            "3.8",
-            "3.9",
-            "3.10",
             "3.11",
             "3.12",
             "3.13",
@@ -236,8 +233,6 @@ jobs:
             "3.14t",
             "3.15-dev",
             "3.15t-dev",
-            "pypy3.11",
-            "graalpy25.0",
           ]
         platform:
           [
@@ -306,23 +301,6 @@ jobs:
                 rust-target: "x86_64-apple-darwin",
               }
 
-          # arm64 macOS Python not available on GitHub Actions until 3.10, test older versions on x64
-          - rust: stable
-            python-version: "3.8"
-            platform:
-              {
-                os: "macos-15-intel",
-                python-architecture: "x64",
-                rust-target: "x86_64-apple-darwin",
-              }
-          - rust: stable
-            python-version: "3.9"
-            platform:
-              {
-                os: "macos-15-intel",
-                python-architecture: "x64",
-                rust-target: "x86_64-apple-darwin",
-              }
           # test latest Python on arm64 linux & windows runners
           - rust: stable
             python-version: "3.14"
@@ -340,25 +318,6 @@ jobs:
                 python-architecture: "arm64",
                 rust-target: "aarch64-pc-windows-msvc",
               }
-        exclude:
-          # arm64 macOS Python not available on GitHub Actions until 3.10
-          - rust: stable
-            python-version: "3.8"
-            platform:
-              {
-                os: "macos-latest",
-                python-architecture: "arm64",
-                rust-target: "aarch64-apple-darwin",
-              }
-          - rust: stable
-            python-version: "3.9"
-            platform:
-              {
-                os: "macos-latest",
-                python-architecture: "arm64",
-                rust-target: "aarch64-apple-darwin",
-              }
-
   valgrind:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'CI-build-full') || github.event_name != 'pull_request' }}
     needs: [fmt]

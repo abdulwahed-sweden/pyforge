@@ -29,3 +29,4 @@ netlify_build/
 .nox/
 .vscode/
 .lycheecache
+.DS_Store

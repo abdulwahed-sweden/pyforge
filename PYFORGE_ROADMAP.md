@@ -88,7 +88,8 @@ Author set to **Abdulwahed Mansour** across all crates.
 - [x] Remove ALL `#[cfg(PyPy)]` and `#[cfg(GraalPy)]` code paths (~925 blocks)
 - [x] Remove Python 3.8/3.9/3.10 compatibility shims from FFI
 - [x] 925 tests passing, zero compilation errors
-- [ ] Simplify CI matrix to CPython 3.11/3.12/3.13
+- [x] Simplify CI matrix to CPython 3.11+ (removed 3.8/3.9/3.10, PyPy, GraalPy)
+- [x] Repository cleanup: remove PyO3 branding, irrelevant examples, old docs, Netlify config
 - [ ] Update UI test snapshots for renamed error messages
 
 ### Phase 2: Modern API Surface
