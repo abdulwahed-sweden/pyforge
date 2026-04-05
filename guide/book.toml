@@ -1,7 +1,7 @@
 [book]
-title = "PyO3 user guide"
-description = "PyO3 user guide"
-authors = ["PyO3 Project and Contributors"]
+title = "ClaraX user guide"
+description = "ClaraX user guide"
+authors = ["Abdulwahed Mansour"]
 
 [preprocessor.pyo3_version]
 command = "python3 pyo3_version.py"
@@ -12,8 +12,8 @@ command = "python3 glossary_linker.py"
 [preprocessor.tabs]
 
 [output.html]
-git-repository-url = "https://github.com/PyO3/pyo3/tree/main/guide"
-edit-url-template = "https://github.com/PyO3/pyo3/edit/main/guide/{path}"
+git-repository-url = "https://github.com/abdulwahed-sweden/clarax/tree/main/guide"
+edit-url-template = "https://github.com/abdulwahed-sweden/clarax/edit/main/guide/{path}"
 playground.runnable = false
 additional-css = ["theme/tabs.css"]
 additional-js = ["theme/tabs.js"]

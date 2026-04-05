@@ -69,7 +69,7 @@ def Counter(wraps):
 A [previous implementation] used a normal `u64`, which meant it required a `&mut self` receiver to update the count:
 
 ```rust,ignore
-#[clarax(signature = (*args, **kwargs))]
+#[pyo3(signature = (*args, **kwargs))]
 fn __call__(
     &mut self,
     py: Python<'_>,

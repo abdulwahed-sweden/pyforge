@@ -659,7 +659,7 @@ impl<'a, 'py> IntoPyObject<'py> for &'a MyPyObjectWrapper {
 <summary><small>Click to expand</small></summary>
 
 With the introduction of the `IntoPyObject` trait, ClaraX's macros now prefer `IntoPyObject` implementations over `IntoPy<PyObject>` when producing Python values.
-This applies to `#[pyfunction]` and `#[pymethods]` return values and also fields accessed via `#[clarax(get)]`.
+This applies to `#[pyfunction]` and `#[pymethods]` return values and also fields accessed via `#[pyo3(get)]`.
 
 This change has an effect on functions and methods returning _byte_ collections like
 
@@ -810,7 +810,7 @@ See <a href="#from-021-to-022">the 0.21 migration entry</a> for help upgrading.
 <summary><small>Click to expand</small></summary>
 
 With `clarax` 0.22 the implicit `None` default for trailing `Option<T>` type argument is deprecated.
-To migrate, place a `#[clarax(signature = (...))]` attribute on affected functions or methods and specify the desired behavior.
+To migrate, place a `#[pyo3(signature = (...))]` attribute on affected functions or methods and specify the desired behavior.
 The migration warning specifies the corresponding signature to keep the current behavior.
 With 0.23 the signature will be required for any function containing `Option<T>` type parameters to prevent accidental and unnoticed changes in behavior.
 With 0.24 this restriction will be lifted again and `Option<T>` type arguments will be treated as any other argument _without_ special handling.
@@ -832,7 +832,7 @@ After:
 # #![allow(dead_code)]
 # use clarax::prelude::*;
 #[pyfunction]
-#[clarax(signature = (x, amount=None))]
+#[pyo3(signature = (x, amount=None))]
 fn increment(x: u64, amount: Option<u64>) -> u64 {
     x + amount.unwrap_or(1)
 }
@@ -866,12 +866,12 @@ Enabling this feature will remove these costs and make the `Drop` implementation
 <details>
 <summary><small>Click to expand</small></summary>
 
-With `clarax` 0.22 the new `#[clarax(eq)]` options allows automatic implementation of Python equality using Rust's `PartialEq`.
+With `clarax` 0.22 the new `#[pyo3(eq)]` options allows automatic implementation of Python equality using Rust's `PartialEq`.
 Previously simple enums automatically implemented equality in terms of their discriminants.
 To make ClaraX more consistent, this automatic equality implementation is deprecated in favour of having opt-ins for all `#[pyclass]` types.
-Similarly, simple enums supported comparison with integers, which is not covered by Rust's `PartialEq` derive, so has been split out into the `#[clarax(eq_int)]` attribute.
+Similarly, simple enums supported comparison with integers, which is not covered by Rust's `PartialEq` derive, so has been split out into the `#[pyo3(eq_int)]` attribute.
 
-To migrate, place a `#[clarax(eq, eq_int)]` attribute on simple enum classes.
+To migrate, place a `#[pyo3(eq, eq_int)]` attribute on simple enum classes.
 
 Before:
 

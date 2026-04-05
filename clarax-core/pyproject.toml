@@ -27,5 +27,7 @@ Homepage = "https://github.com/abdulwahed-sweden/clarax"
 Repository = "https://github.com/abdulwahed-sweden/clarax"
 
 [tool.maturin]
+# clarax is a renamed pyo3 fork — override auto-detection
+bindings = "pyo3"
 module-name = "clarax_core._native"
 python-packages = ["clarax_core"]

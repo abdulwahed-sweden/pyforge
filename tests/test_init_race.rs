@@ -1,4 +1,4 @@
-#![cfg(not(any(PyPy, GraalPy)))]
+// ClaraX: CPython-only
 #![cfg(not(target_arch = "wasm32"))]
 
 use clarax::types::PyAnyMethods;

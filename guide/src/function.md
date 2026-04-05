@@ -21,11 +21,11 @@ This chapter of the guide explains full usage of the `#[pyfunction]` attribute.
 In this first section, the following topics are covered:
 
 - [Function options](#function-options)
-  - [`#[clarax(name = "...")]`](#name)
-  - [`#[clarax(signature = (...))]`](#signature)
-  - [`#[clarax(text_signature = "...")]`](#text_signature)
-  - [`#[clarax(pass_module)]`](#pass_module)
-  - [`#[clarax(warn(message = "...", category = ...))]`](#warn)
+  - [`#[pyo3(name = "...")]`](#name)
+  - [`#[pyo3(signature = (...))]`](#signature)
+  - [`#[pyo3(text_signature = "...")]`](#text_signature)
+  - [`#[pyo3(pass_module)]`](#pass_module)
+  - [`#[pyo3(warn(message = "...", category = ...))]`](#warn)
 - [Per-argument options](#per-argument-options)
 - [Advanced function patterns](#advanced-function-patterns)
 
@@ -39,7 +39,7 @@ There are also additional sections on the following topics:
 The `#[clarax]` attribute can be used to modify properties of the generated Python function.
 It can take any combination of the following options:
 
-- <a id="name"></a> `#[clarax(name = "...")]`
+- <a id="name"></a> `#[pyo3(name = "...")]`
 
     Overrides the name exposed to Python.
 
@@ -52,7 +52,7 @@ It can take any combination of the following options:
         use clarax::prelude::*;
 
         #[pyfunction]
-        #[clarax(name = "no_args")]
+        #[pyo3(name = "no_args")]
         fn no_args_py() -> usize {
             42
         }
@@ -65,17 +65,17 @@ It can take any combination of the following options:
     # });
     ```
 
-- <a id="signature"></a> `#[clarax(signature = (...))]`
+- <a id="signature"></a> `#[pyo3(signature = (...))]`
 
     Defines the function signature in Python.
     See [Function Signatures](./function/signature.md).
 
-- <a id="text_signature"></a> `#[clarax(text_signature = "...")]`
+- <a id="text_signature"></a> `#[pyo3(text_signature = "...")]`
 
     Overrides the ClaraX-generated function signature visible in Python tooling (such as via [`inspect.signature`]).
     See the [corresponding topic in the Function Signatures subchapter](./function/signature.md#making-the-function-signature-available-to-python).
 
-- <a id="pass_module" ></a> `#[clarax(pass_module)]`
+- <a id="pass_module" ></a> `#[pyo3(pass_module)]`
 
     Set this option to make ClaraX pass the containing module as the first argument to the function.
     It is then possible to use the module in the function body.
@@ -90,7 +90,7 @@ It can take any combination of the following options:
         use clarax::types::PyString;
 
         #[pyfunction]
-        #[clarax(pass_module)]
+        #[pyo3(pass_module)]
         fn pyfunction_with_module<'py>(
             module: &Bound<'py, PyModule>,
         ) -> PyResult<Bound<'py, PyString>> {
@@ -99,7 +99,7 @@ It can take any combination of the following options:
     }
     ```
 
-- <a id="warn"></a> `#[clarax(warn(message = "...", category = ...))]`
+- <a id="warn"></a> `#[pyo3(warn(message = "...", category = ...))]`
 
     This option is used to display a warning when the function is used in Python.
     It is equivalent to [`warnings.warn(message, category)`](https://docs.python.org/3/library/warnings.html#warnings.warn).
@@ -108,7 +108,7 @@ It can take any combination of the following options:
 
     > Note: when used with `#[pymethods]`, this attribute does not work with `#[classattr]` nor `__traverse__` magic method.
 
-    The following are examples of using the `#[clarax(warn)]` attribute:
+    The following are examples of using the `#[pyo3(warn)]` attribute:
 
     ```rust
     use clarax::prelude::*;
@@ -119,13 +119,13 @@ It can take any combination of the following options:
         use clarax::exceptions::PyFutureWarning;
 
         #[pyfunction]
-        #[clarax(warn(message = "This is a warning message"))]
+        #[pyo3(warn(message = "This is a warning message"))]
         fn function_with_warning() -> usize {
             42
         }
 
         #[pyfunction]
-        #[clarax(warn(message = "This function is warning with FutureWarning", category = PyFutureWarning))]
+        #[pyo3(warn(message = "This function is warning with FutureWarning", category = PyFutureWarning))]
         fn function_with_warning_and_custom_category() -> usize {
             42
         }
@@ -210,7 +210,7 @@ It can take any combination of the following options:
 The `#[clarax]` attribute can be used on individual arguments to modify properties of them in the generated function.
 It can take any combination of the following options:
 
-- <a id="from_py_with"></a> `#[clarax(from_py_with = ...)]`
+- <a id="from_py_with"></a> `#[pyo3(from_py_with = ...)]`
 
     Set this on an option to specify a custom function to convert the function argument from Python to the desired Rust type, instead of using the default `FromPyObject` extraction.
     The function signature must be `fn(&Bound<'_, PyAny>) -> PyResult<T>` where `T` is the Rust type of the argument.
@@ -225,7 +225,7 @@ It can take any combination of the following options:
     }
 
     #[pyfunction]
-    fn object_length(#[clarax(from_py_with = get_length)] argument: usize) -> usize {
+    fn object_length(#[pyo3(from_py_with = get_length)] argument: usize) -> usize {
         argument
     }
 

@@ -140,10 +140,10 @@ use clarax::exceptions::PyException;
 
 #[pyclass(extends=PyException)]
 struct CustomError {
-    #[clarax(get)]
+    #[pyo3(get)]
     url: String,
 
-    #[clarax(get)]
+    #[pyo3(get)]
     message: String,
 }
 

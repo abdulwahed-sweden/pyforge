@@ -9,7 +9,7 @@ This chapter will discuss the functionality and configuration these attributes o
 Below is a list of links to the relevant section of this chapter for each:
 
 - [`#[pyclass]`](#defining-a-new-class)
-  - [`#[clarax(get, set)]`](#object-properties-using-claraxget-set)
+  - [`#[pyo3(get, set)]`](#object-properties-using-claraxget-set)
 - [`#[pymethods]`](#instance-methods)
   - [`#[new]`](#constructor)
   - [`#[getter]`](#object-properties-using-getter-and-setter)
@@ -211,21 +211,21 @@ It can either return `()` or `PyResult<()>`.
 ```rust
 # #![allow(dead_code)]
 # use clarax::prelude::*;
-# #[cfg(not(any(Py_LIMITED_API, GraalPy)))]
+# #[cfg(not(Py_LIMITED_API))]
 use clarax::types::{PyDict, PyTuple, PySuper};
-# #[cfg(not(any(Py_LIMITED_API, GraalPy)))]
+# #[cfg(not(Py_LIMITED_API))]
 use crate::clarax::PyTypeInfo;
 
-# #[cfg(not(any(Py_LIMITED_API, GraalPy)))]
+# #[cfg(not(Py_LIMITED_API))]
 #[pyclass(extends = PyDict)]
 struct MyDict;
 
-# #[cfg(not(any(Py_LIMITED_API, GraalPy)))]
+# #[cfg(not(Py_LIMITED_API))]
 #[pymethods]
 impl MyDict {
 #   #[allow(unused_variables)]
     #[new]
-    #[clarax(signature = (*args, **kwargs))]
+    #[pyo3(signature = (*args, **kwargs))]
     fn __new__(
         args: &Bound<'_, PyTuple>,
         kwargs: Option<&Bound<'_, PyDict>>,
@@ -233,7 +233,7 @@ impl MyDict {
         Ok(Self)
     }
 
-    #[clarax(signature = (*args, **kwargs))]
+    #[pyo3(signature = (*args, **kwargs))]
     fn __init__(
         slf: &Bound<'_, Self>,
         args: &Bound<'_, PyTuple>,
@@ -250,7 +250,7 @@ impl MyDict {
     }
 }
 
-# #[cfg(not(any(Py_LIMITED_API, GraalPy)))]
+# #[cfg(not(Py_LIMITED_API))]
 # fn main() {
 #     Python::attach(|py| {
 #         let typeobj = py.get_type::<MyDict>();
@@ -259,7 +259,7 @@ impl MyDict {
 #         assert_eq!(obj.get_item("my_key").unwrap().extract::<&str>().unwrap(), "always insert this key");
 #     });
 # }
-# #[cfg(any(Py_LIMITED_API, GraalPy))]
+# #[cfg(Py_LIMITED_API)]
 # fn main() {}
 ```
 
@@ -307,7 +307,7 @@ For users who are not very familiar with `RefCell<T>`, here is a reminder of Rus
 # use clarax::prelude::*;
 #[pyclass]
 struct MyClass {
-    #[clarax(get)]
+    #[pyo3(get)]
     num: i32,
 }
 Python::attach(|py| {
@@ -601,7 +601,7 @@ struct MyDict {
 #[pymethods]
 impl MyDict {
     #[new]
-    #[clarax(signature = (*args, **kwargs))]
+    #[pyo3(signature = (*args, **kwargs))]
     fn new(args: &Bound<'_, PyAny>, kwargs: Option<&Bound<'_, PyAny>>) -> Self {
         Self { private: 0 }
     }
@@ -621,12 +621,12 @@ Here, the `args` and `kwargs` allow creating instances of the subclass passing i
 
 ClaraX supports two ways to add properties to your `#[pyclass]`:
 
-- For simple struct fields with no side effects, a `#[clarax(get, set)]` attribute can be added directly to the field definition in the `#[pyclass]`.
+- For simple struct fields with no side effects, a `#[pyo3(get, set)]` attribute can be added directly to the field definition in the `#[pyclass]`.
 - For properties which require computation you can define `#[getter]`, `#[setter]` and `#[deleter]` functions in the [`#[pymethods]`](#instance-methods) block.
 
 We'll cover each of these in the following sections.
 
-### Object properties using `#[clarax(get, set)]`
+### Object properties using `#[pyo3(get, set)]`
 
 For simple cases where a member variable is just read and written with no side effects, you can declare getters and setters in your `#[pyclass]` field definition using the `clarax` attribute, like in the example below:
 
@@ -635,15 +635,15 @@ For simple cases where a member variable is just read and written with no side e
 # #[allow(dead_code)]
 #[pyclass]
 struct MyClass {
-    #[clarax(get, set)]
+    #[pyo3(get, set)]
     num: i32,
 }
 ```
 
 The above would make the `num` field available for reading and writing as a `self.num` Python property.
-To expose the property with a different name to the field, specify this alongside the rest of the options, e.g. `#[clarax(get, set, name = "custom_name")]`.
+To expose the property with a different name to the field, specify this alongside the rest of the options, e.g. `#[pyo3(get, set, name = "custom_name")]`.
 
-Properties can be readonly or writeonly by using just `#[clarax(get)]` or `#[clarax(set)]` respectively.
+Properties can be readonly or writeonly by using just `#[pyo3(get)]` or `#[pyo3(set)]` respectively.
 
 To use these annotations, your field type must implement some conversion traits:
 
@@ -651,11 +651,11 @@ To use these annotations, your field type must implement some conversion traits:
 - For `set` the field type must implement `FromPyObject`.
 
 For example, implementations of those traits are provided for the `Cell` type, if the inner type also implements the trait.
-This means you can use `#[clarax(get, set)]` on fields wrapped in a `Cell`.
+This means you can use `#[pyo3(get, set)]` on fields wrapped in a `Cell`.
 
 ### Object properties using `#[getter]` and `#[setter]`
 
-For cases which don't satisfy the `#[clarax(get, set)]` trait requirements, or need side effects, descriptor methods can be defined in a `#[pymethods]` `impl` block.
+For cases which don't satisfy the `#[pyo3(get, set)]` trait requirements, or need side effects, descriptor methods can be defined in a `#[pymethods]` `impl` block.
 
 This is done using the `#[getter]` and `#[setter]` attributes, like in the example below:
 
@@ -932,7 +932,7 @@ impl MyClass {
 class creation.
 
 > [!NOTE]
-> `#[classattr]` does not work with [`#[clarax(warn(...))]`](./function.md#warn) attribute.
+> `#[classattr]` does not work with [`#[pyo3(warn(...))]`](./function.md#warn) attribute.
 
 ## Classes as function arguments
 
@@ -1004,7 +1004,7 @@ Note that `#[derive(FromPyObject)]` on a class is usually not useful as it tries
 
 ## Method arguments
 
-Similar to `#[pyfunction]`, the `#[clarax(signature = (...))]` attribute can be used to specify the way that `#[pymethods]` accept arguments.
+Similar to `#[pyfunction]`, the `#[pyo3(signature = (...))]` attribute can be used to specify the way that `#[pymethods]` accept arguments.
 Consult the documentation for [`function signatures`](./function/signature.md) to see the parameters this attribute accepts.
 
 The following example defines a class `MyClass` with a method `method`.
@@ -1021,12 +1021,12 @@ use clarax::types::{PyDict, PyTuple};
 #[pymethods]
 impl MyClass {
     #[new]
-    #[clarax(signature = (num=-1))]
+    #[pyo3(signature = (num=-1))]
     fn new(num: i32) -> Self {
         MyClass { num }
     }
 
-    #[clarax(signature = (num=10, *py_args, name="Hello", **py_kwargs))]
+    #[pyo3(signature = (num=10, *py_args, name="Hello", **py_kwargs))]
     fn method(
         &mut self,
         num: i32,
@@ -1055,7 +1055,7 @@ py_args=('World', 666), py_kwargs=Some({'x': 44, 'y': 55}), name=Hello, num=44, 
 py_args=(), py_kwargs=None, name=World, num=-1, num_before=44
 ```
 
-The [`#[clarax(text_signature = "...")`](./function/signature.md#overriding-the-generated-signature) option for `#[pyfunction]` also works for `#[pymethods]`.
+The [`#[pyo3(text_signature = "...")`](./function/signature.md#overriding-the-generated-signature) option for `#[pyfunction]` also works for `#[pymethods]`.
 
 ```rust
 # #![allow(dead_code)]
@@ -1068,23 +1068,23 @@ struct MyClass {}
 #[pymethods]
 impl MyClass {
     #[new]
-    #[clarax(text_signature = "(c, d)")]
+    #[pyo3(text_signature = "(c, d)")]
     fn new(c: i32, d: &str) -> Self {
         Self {}
     }
     // the self argument should be written $self
-    #[clarax(text_signature = "($self, e, f)")]
+    #[pyo3(text_signature = "($self, e, f)")]
     fn my_method(&self, e: i32, f: i32) -> i32 {
         e + f
     }
     // similarly for classmethod arguments, use $cls
     #[classmethod]
-    #[clarax(text_signature = "($cls, e, f)")]
+    #[pyo3(text_signature = "($cls, e, f)")]
     fn my_class_method(cls: &Bound<'_, PyType>, e: i32, f: i32) -> i32 {
         e + f
     }
     #[staticmethod]
-    #[clarax(text_signature = "(e, f)")]
+    #[pyo3(text_signature = "(e, f)")]
     fn my_static_method(e: i32, f: i32) -> i32 {
         e + f
     }
@@ -1295,14 +1295,14 @@ Python::attach(|py| {
 })
 ```
 
-Enums and their variants can also be renamed using `#[clarax(name)]`.
+Enums and their variants can also be renamed using `#[pyo3(name)]`.
 
 ```rust
 # use clarax::prelude::*;
 #[pyclass(eq, eq_int, name = "RenamedEnum")]
 #[derive(PartialEq)]
 enum MyEnum {
-    #[clarax(name = "UPPERCASE")]
+    #[pyo3(name = "UPPERCASE")]
     Variant,
 }
 
@@ -1316,7 +1316,7 @@ Python::attach(|py| {
 })
 ```
 
-Ordering of enum variants is optionally added using `#[clarax(ord)]`.
+Ordering of enum variants is optionally added using `#[pyo3(ord)]`.
 *Note: Implementation of the `PartialOrd` trait is required when passing the `ord` argument.*
 *If not implemented, a compile time error is raised.*
 
@@ -1442,19 +1442,19 @@ Python::attach(|py| {
 })
 ```
 
-The constructor of each generated class can be customized using the `#[clarax(constructor = (...))]` attribute.
-This uses the same syntax as the [`#[clarax(signature = (...))]`](function/signature.md) attribute on function and methods and supports the same options.
+The constructor of each generated class can be customized using the `#[pyo3(constructor = (...))]` attribute.
+This uses the same syntax as the [`#[pyo3(signature = (...))]`](function/signature.md) attribute on function and methods and supports the same options.
 To apply this attribute simply place it on top of a variant in a `#[pyclass]` complex enum as shown below:
 
 ```rust
 # use clarax::prelude::*;
 #[pyclass]
 enum Shape {
-    #[clarax(constructor = (radius=1.0))]
+    #[pyo3(constructor = (radius=1.0))]
     Circle { radius: f64 },
-    #[clarax(constructor = (*, width, height))]
+    #[pyo3(constructor = (*, width, height))]
     Rectangle { width: f64, height: f64 },
-    #[clarax(constructor = (side_count, radius=1.0))]
+    #[pyo3(constructor = (side_count, radius=1.0))]
     RegularPolygon { side_count: u32, radius: f64 },
     Nothing { },
 }

@@ -13,7 +13,7 @@ use futures::channel::oneshot;
 use clarax::prelude::*;
 
 #[pyfunction]
-#[clarax(signature=(seconds, result=None))]
+#[pyo3(signature=(seconds, result=None))]
 async fn sleep(seconds: f64, result: Option<Py<PyAny>>) -> Option<Py<PyAny>> {
     let (tx, rx) = oneshot::channel();
     thread::spawn(move || {
@@ -81,7 +81,7 @@ where
 
 ## Cancellation
 
-Cancellation on the Python side can be caught using [`CancelHandle`]({{#PYO3_DOCS_URL}}/clarax/coroutine/struct.CancelHandle.html) type, by annotating a function parameter with `#[clarax(cancel_handle)]`.
+Cancellation on the Python side can be caught using [`CancelHandle`]({{#PYO3_DOCS_URL}}/clarax/coroutine/struct.CancelHandle.html) type, by annotating a function parameter with `#[pyo3(cancel_handle)]`.
 
 ```rust,no_run
 # #![allow(dead_code)]
@@ -91,7 +91,7 @@ use clarax::prelude::*;
 use clarax::coroutine::CancelHandle;
 
 #[pyfunction]
-async fn cancellable(#[clarax(cancel_handle)] mut cancel: CancelHandle) {
+async fn cancellable(#[pyo3(cancel_handle)] mut cancel: CancelHandle) {
     futures::select! {
         /* _ = ... => println!("done"), */
         _ = cancel.cancelled().fuse() => println!("cancelled"),

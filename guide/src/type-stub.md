@@ -43,7 +43,7 @@ pub mod example {
     }
 
     #[pyfunction]
-    #[clarax(signature = (arg: "list[int]") -> "list[int]")]
+    #[pyo3(signature = (arg: "list[int]") -> "list[int]")]
     fn list_of_int_identity(arg: Bound<'_, PyAny>) -> Bound<'_, PyAny> {
         arg
     }
@@ -69,7 +69,7 @@ class Class:
 def list_of_int_identity(arg: list[int]) -> list[int]: ...
 ```
 
-The only piece of added syntax is that the `#[clarax(signature = ...)]` attribute can now contain type annotations like `#[clarax(signature = (arg: "list[int]") -> "list[int]")]` (note the `""` around type annotations).
+The only piece of added syntax is that the `#[pyo3(signature = ...)]` attribute can now contain type annotations like `#[pyo3(signature = (arg: "list[int]") -> "list[int]")]` (note the `""` around type annotations).
 This is useful when ClaraX is not able to derive proper type annotations by itself.
 
 ## Constraints and limitations

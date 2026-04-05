@@ -64,14 +64,14 @@ struct RustyStruct {
 # }
 ```
 
-By setting the `#[clarax(item)]` attribute on the field, ClaraX will attempt to extract the value by calling the `get_item` method on the Python object.
+By setting the `#[pyo3(item)]` attribute on the field, ClaraX will attempt to extract the value by calling the `get_item` method on the Python object.
 
 ```rust
 use clarax::prelude::*;
 
 #[derive(FromPyObject)]
 struct RustyStruct {
-    #[clarax(item)]
+    #[pyo3(item)]
     my_string: String,
 }
 #
@@ -95,9 +95,9 @@ use clarax::prelude::*;
 
 #[derive(FromPyObject)]
 struct RustyStruct {
-    #[clarax(item("key"))]
+    #[pyo3(item("key"))]
     string_in_mapping: String,
-    #[clarax(attribute("name"))]
+    #[pyo3(attribute("name"))]
     string_attr: String,
 }
 #
@@ -127,19 +127,19 @@ struct RustyStruct {
 This tries to extract `string_attr` from the attribute `name` and `string_in_mapping` from a mapping with the key `"key"`.
 The arguments for `attribute` are restricted to non-empty string literals while `item` can take any valid literal that implements `ToBorrowedObject`.
 
-You can use `#[clarax(from_item_all)]` on a struct to extract every field with `get_item` method.
-In this case, you can't use `#[clarax(attribute)]` or barely use `#[clarax(item)]` on any field.
-However, using `#[clarax(item("key"))]` to specify the key for a field is still allowed.
+You can use `#[pyo3(from_item_all)]` on a struct to extract every field with `get_item` method.
+In this case, you can't use `#[pyo3(attribute)]` or barely use `#[pyo3(item)]` on any field.
+However, using `#[pyo3(item("key"))]` to specify the key for a field is still allowed.
 
 ```rust
 use clarax::prelude::*;
 
 #[derive(FromPyObject)]
-#[clarax(from_item_all)]
+#[pyo3(from_item_all)]
 struct RustyStruct {
     foo: String,
     bar: String,
-    #[clarax(item("foobar"))]
+    #[pyo3(item("foobar"))]
     baz: String,
 }
 #
@@ -216,7 +216,7 @@ use clarax::prelude::*;
 struct RustyTransparentTupleStruct(String);
 
 #[derive(FromPyObject)]
-#[clarax(transparent)]
+#[pyo3(transparent)]
 struct RustyTransparentStruct {
     inner: String,
 }
@@ -264,12 +264,12 @@ enum RustyEnum<'py> {
     },
     Coordinates2d {
         // only gets checked if the input did not have `z`
-        #[clarax(attribute("x"))]
+        #[pyo3(attribute("x"))]
         a: usize,
-        #[clarax(attribute("y"))]
+        #[pyo3(attribute("y"))]
         b: usize,
     },
-    #[clarax(transparent)]
+    #[pyo3(transparent)]
     CatchAll(Bound<'py, PyAny>), // This extraction never fails
 }
 #
@@ -391,7 +391,7 @@ enum RustyEnum<'py> {
 ```
 
 If none of the enum variants match, a `PyTypeError` containing the names of the tested variants is returned.
-The names reported in the error message can be customized through the `#[clarax(annotation = "name")]` attribute, e.g. to use conventional Python type names:
+The names reported in the error message can be customized through the `#[pyo3(annotation = "name")]` attribute, e.g. to use conventional Python type names:
 
 ```rust
 use clarax::prelude::*;
@@ -399,9 +399,9 @@ use clarax::prelude::*;
 #[derive(FromPyObject)]
 # #[derive(Debug)]
 enum RustyEnum {
-    #[clarax(transparent, annotation = "str")]
+    #[pyo3(transparent, annotation = "str")]
     String(String),
-    #[clarax(transparent, annotation = "int")]
+    #[pyo3(transparent, annotation = "int")]
     Int(isize),
 }
 #
@@ -489,9 +489,9 @@ use clarax::prelude::*;
 
 #[derive(FromPyObject)]
 struct RustyStruct {
-    #[clarax(item("value"), default, from_py_with = Bound::<'_, PyAny>::len)]
+    #[pyo3(item("value"), default, from_py_with = Bound::<'_, PyAny>::len)]
     len: usize,
-    #[clarax(item)]
+    #[pyo3(item)]
     other: usize,
 }
 #
@@ -585,7 +585,7 @@ struct Struct {
 struct Tuple<'a, K: Hash + Eq, V>(&'a str, HashMap<K, V>);
 ```
 
-For structs with a single field (newtype pattern) the `#[clarax(transparent)]` option can be used to forward the implementation to the inner type.
+For structs with a single field (newtype pattern) the `#[pyo3(transparent)]` option can be used to forward the implementation to the inner type.
 
 ```rust,no_run
 # #![allow(dead_code)]
@@ -596,7 +596,7 @@ For structs with a single field (newtype pattern) the `#[clarax(transparent)]` o
 struct TransparentTuple(Py<PyAny>);
 
 #[derive(IntoPyObject)]
-#[clarax(transparent)]
+#[pyo3(transparent)]
 struct TransparentStruct<'py> {
     inner: Bound<'py, PyAny>, // `'py` lifetime will be used as the Python lifetime
 }
@@ -613,7 +613,7 @@ For `enum`s each variant is converted according to the rules for `struct`s above
 #[derive(IntoPyObject)]
 enum Enum<'a, 'py, K: Hash + Eq, V> { // enums are supported and convert using the same
     TransparentTuple(Py<PyAny>),       // rules on the variants as the structs above
-    #[clarax(transparent)]
+    #[pyo3(transparent)]
     TransparentStruct { inner: Bound<'py, PyAny> },
     Tuple(&'a str, HashMap<K, V>),
     Struct { count: usize, obj: Py<PyAny> }
@@ -641,7 +641,7 @@ All the same rules from above apply as well.
 
     #[derive(IntoPyObject, IntoPyObjectRef)]
     struct MyStruct {
-        #[clarax(into_py_with = convert)]
+        #[pyo3(into_py_with = convert)]
         not_into_py: NotIntoPy,
     }
 

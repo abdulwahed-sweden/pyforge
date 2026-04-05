@@ -63,7 +63,7 @@ This flag isn't checked while Rust code called from Python is executing, only on
 You can give the Python interpreter a chance to process the signal properly by calling `Python::check_signals`.
 It's good practice to call this function regularly if you have a long-running Rust function so that your users can cancel it.
 
-## `#[clarax(get)]` clones my field
+## `#[pyo3(get)]` clones my field
 
 You may have a nested struct similar to this:
 
@@ -75,7 +75,7 @@ struct Inner {/* fields omitted */}
 
 #[pyclass]
 struct Outer {
-    #[clarax(get)]
+    #[pyo3(get)]
     inner: Inner,
 }
 
@@ -168,7 +168,7 @@ This is done with the `crate` attribute:
 # mod reexported { pub use ::clarax; }
 # #[allow(dead_code)]
 #[pyclass]
-#[clarax(crate = "reexported::clarax")]
+#[pyo3(crate = "reexported::clarax")]
 struct MyClass;
 ```
 

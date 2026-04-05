@@ -39,5 +39,7 @@ drf = ["djangorestframework>=3.14"]
 dev = ["pytest>=7.0", "pytest-django>=4.5"]
 
 [tool.maturin]
+# clarax is a renamed pyo3 fork — override auto-detection
+bindings = "pyo3"
 module-name = "clarax_django"
 python-packages = ["django_clarax"]

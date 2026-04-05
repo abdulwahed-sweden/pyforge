@@ -20,14 +20,14 @@ If this is not the case, please file a bug report.
 ## Magic Methods handled by ClaraX
 
 If a function name in `#[pymethods]` is a magic method which is known to need special handling, it will be automatically placed into the correct slot in the Python type object.
-The function name is taken from the usual rules for naming `#[pymethods]`: the `#[clarax(name = "...")]` attribute is used if present, otherwise the Rust function name is used.
+The function name is taken from the usual rules for naming `#[pymethods]`: the `#[pyo3(name = "...")]` attribute is used if present, otherwise the Rust function name is used.
 
 The magic methods handled by ClaraX are very similar to the standard Python ones on [this page](https://docs.python.org/3/reference/datamodel.html#special-method-names) - in particular they are the subset which have slots as [defined here](https://docs.python.org/3/c-api/typeobj.html).
 
 When ClaraX handles a magic method, a couple of changes apply compared to other `#[pymethods]`:
 
 - The Rust function signature is restricted to match the magic method.
-- The `#[clarax(signature = (...)]` and `#[clarax(text_signature = "...")]` attributes are not allowed.
+- The `#[pyo3(signature = (...)]` and `#[pyo3(text_signature = "...")]` attributes are not allowed.
 
 The following sections list all magic methods for which ClaraX implements the necessary special handling.
 The given signatures should be interpreted as follows:
@@ -460,7 +460,7 @@ Immutable references do not have to be cleared, as every cycle must contain at l
 - `__clear__(<self>) -> ()`
 
 > [!NOTE]
-> `__traverse__` does not work with [`#[clarax(warn(...))]`](../function.md#warn).
+> `__traverse__` does not work with [`#[pyo3(warn(...))]`](../function.md#warn).
 
 Example:
 

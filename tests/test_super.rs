@@ -1,4 +1,4 @@
-#![cfg(all(feature = "macros", not(any(PyPy, GraalPy))))]
+#![cfg(feature = "macros")]
 
 use clarax::{prelude::*, types::PySuper};
 

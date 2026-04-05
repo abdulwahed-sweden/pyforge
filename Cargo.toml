@@ -101,7 +101,8 @@ macros = ["clarax-macros"]
 # Enables multiple #[pymethods] per #[pyclass]
 multiple-pymethods = ["inventory", "clarax-macros/multiple-pymethods"]
 
-# Removed: extension-module (deprecated, use PYO3_BUILD_EXTENSION_MODULE env var)
+# Tells the linker not to look for libpython (for building extension modules)
+extension-module = []
 
 # Use the Python limited API. See https://www.python.org/dev/peps/pep-0384/ for more.
 abi3 = ["clarax-build-config/abi3", "clarax-ffi/abi3"]
@@ -174,6 +175,7 @@ members = [
     "clarax-introspection",
     "clarax-core",
     "clarax-django",
+    "pyo3-shim",
     "pytests",
     "examples",
 ]

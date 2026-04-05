@@ -1,0 +1,16 @@
+# Thin shim so maturin detects pyo3 bindings.
+# ClaraX is a pyo3 fork — this crate just re-exports it under the pyo3 name.
+[package]
+name = "pyo3"
+version = "0.3.0"
+edition = "2021"
+authors = ["Abdulwahed Mansour"]
+publish = false
+
+[features]
+extension-module = ["clarax/extension-module"]
+abi3 = ["clarax/abi3"]
+abi3-py311 = ["clarax/abi3-py311"]
+
+[dependencies]
+clarax = { path = "..", version = "0.3.0" }

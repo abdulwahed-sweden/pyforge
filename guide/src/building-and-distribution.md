@@ -268,7 +268,7 @@ Also, if the build host Python interpreter is not found or is too old or otherwi
 Due to limitations in the Python API, there are a few `clarax` features that do not work when compiling for `abi3`.
 These are:
 
-- `#[clarax(text_signature = "...")]` does not work on classes until Python 3.10 or greater.
+- `#[pyo3(text_signature = "...")]` does not work on classes until Python 3.10 or greater.
 - The `dict` and `weakref` options on classes are not supported until Python 3.9 or greater.
 - The buffer API is not supported until Python 3.11 or greater.
 - Subclassing native types (e.g. `PyException`) is not supported until Python 3.12 or greater.

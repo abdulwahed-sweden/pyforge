@@ -240,7 +240,7 @@ Advanced users can opt to manually implement [`__class_getitem__`](https://docs.
 ```rust ignore
 impl MyClass {
     #[classmethod]
-    #[clarax(signature = (key, /))]
+    #[pyo3(signature = (key, /))]
     pub fn __class_getitem__(
         cls: &Bound<'_, PyType>,
         key: &Bound<'_, PyAny>,

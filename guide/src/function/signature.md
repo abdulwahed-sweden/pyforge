@@ -7,11 +7,11 @@ These parameters also work for `#[pymethods]` which will be introduced in the [P
 
 Like Python, by default ClaraX accepts all arguments as either positional or keyword arguments.
 All arguments are required by default.
-This behaviour can be configured by the `#[clarax(signature = (...))]` option which allows writing a signature in Python syntax.
+This behaviour can be configured by the `#[pyo3(signature = (...))]` option which allows writing a signature in Python syntax.
 
-This section of the guide goes into detail about use of the `#[clarax(signature = (...))]` option and its related option `#[clarax(text_signature = "...")]`
+This section of the guide goes into detail about use of the `#[pyo3(signature = (...))]` option and its related option `#[pyo3(text_signature = "...")]`
 
-## Using `#[clarax(signature = (...))]`
+## Using `#[pyo3(signature = (...))]`
 
 For example, below is a function that accepts arbitrary keyword arguments (`**kwargs` in Python syntax) and returns the number that was passed:
 
@@ -22,7 +22,7 @@ mod module_with_functions {
     use clarax::types::PyDict;
 
     #[pyfunction]
-    #[clarax(signature = (**kwds))]
+    #[pyo3(signature = (**kwds))]
     fn num_kwds(kwds: Option<&Bound<'_, PyDict>>) -> usize {
         kwds.map_or(0, |dict| dict.len())
     }
@@ -54,12 +54,12 @@ use clarax::types::{PyDict, PyTuple};
 #[pymethods]
 impl MyClass {
     #[new]
-    #[clarax(signature = (num=-1))]
+    #[pyo3(signature = (num=-1))]
     fn new(num: i32) -> Self {
         MyClass { num }
     }
 
-    #[clarax(signature = (num=10, *py_args, name="Hello", **py_kwargs))]
+    #[pyo3(signature = (num=10, *py_args, name="Hello", **py_kwargs))]
     fn method(
         &mut self,
         num: i32,
@@ -88,7 +88,7 @@ Arguments of type `Python` must not be part of the signature:
 # #![allow(dead_code)]
 # use clarax::prelude::*;
 #[pyfunction]
-#[clarax(signature = (lambda))]
+#[pyo3(signature = (lambda))]
 pub fn simple_python_bound_function(py: Python<'_>, lambda: Py<PyAny>) -> PyResult<()> {
     Ok(())
 }
@@ -130,12 +130,12 @@ num=44
 ## Making the function signature available to Python
 
 The function signature is exposed to Python via the `__text_signature__` attribute.
-ClaraX automatically generates this for every `#[pyfunction]` and all `#[pymethods]` directly from the Rust function, taking into account any override done with the `#[clarax(signature = (...))]` option.
+ClaraX automatically generates this for every `#[pyfunction]` and all `#[pymethods]` directly from the Rust function, taking into account any override done with the `#[pyo3(signature = (...))]` option.
 
 This automatic generation can only display the value of default arguments for strings, integers, boolean types, and `None`.
 Any other default arguments will be displayed as `...`. (`.pyi` type stub files commonly also use `...` for default arguments in the same way.)
 
-In cases where the automatically-generated signature needs adjusting, it can [be overridden](#overriding-the-generated-signature) using the `#[clarax(text_signature)]` option.)
+In cases where the automatically-generated signature needs adjusting, it can [be overridden](#overriding-the-generated-signature) using the `#[pyo3(text_signature)]` option.)
 
 The example below creates a function `add` which accepts two positional-only arguments `a` and `b`, where `b` has a default value of zero.
 
@@ -144,7 +144,7 @@ use clarax::prelude::*;
 
 /// This function adds two unsigned 64-bit integers.
 #[pyfunction]
-#[clarax(signature = (a, b=0, /))]
+#[pyo3(signature = (a, b=0, /))]
 fn add(a: u64, b: u64) -> u64 {
     a + b
 }
@@ -182,7 +182,7 @@ Type:      builtin_function_or_method
 
 ### Overriding the generated signature
 
-The `#[clarax(text_signature = "(<some signature>)")]` attribute can be used to override the default generated signature.
+The `#[pyo3(text_signature = "(<some signature>)")]` attribute can be used to override the default generated signature.
 
 In the snippet below, the text signature attribute is used to include the default value of `0` for the argument `b`, instead of the automatically-generated default value of `...`:
 
@@ -191,7 +191,7 @@ use clarax::prelude::*;
 
 /// This function adds two unsigned 64-bit integers.
 #[pyfunction]
-#[clarax(signature = (a, b=0, /), text_signature = "(a, b=0, /)")]
+#[pyo3(signature = (a, b=0, /), text_signature = "(a, b=0, /)")]
 fn add(a: u64, b: u64) -> u64 {
     a + b
 }
@@ -227,7 +227,7 @@ Docstring: This function adds two unsigned 64-bit integers.
 Type:      builtin_function_or_method
 ```
 
-If no signature is wanted at all, `#[clarax(text_signature = None)]` will disable the built-in signature.
+If no signature is wanted at all, `#[pyo3(text_signature = None)]` will disable the built-in signature.
 The snippet below demonstrates use of this:
 
 ```rust
@@ -235,7 +235,7 @@ use clarax::prelude::*;
 
 /// This function adds two unsigned 64-bit integers.
 #[pyfunction]
-#[clarax(signature = (a, b=0, /), text_signature = None)]
+#[pyo3(signature = (a, b=0, /), text_signature = None)]
 fn add(a: u64, b: u64) -> u64 {
     a + b
 }
@@ -276,7 +276,7 @@ pub mod example {
    use clarax::prelude::*;
 
    #[pyfunction]
-   #[clarax(signature = (arg: "list[int]") -> "list[int]")]
+   #[pyo3(signature = (arg: "list[int]") -> "list[int]")]
    fn list_of_int_identity(arg: Bound<'_, PyAny>) -> Bound<'_, PyAny> {
       arg
    }
