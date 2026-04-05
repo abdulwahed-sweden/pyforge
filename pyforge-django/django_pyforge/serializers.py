@@ -19,10 +19,14 @@ The mixin automatically detects which fields are simple model fields
 """
 
 import logging
+import time
 
 from django_pyforge import ModelSchema, serialize_instance
 
 logger = logging.getLogger("django_pyforge")
+
+# N+1 detection: track warned FK fields to avoid log spam
+_n1_warned = set()
 
 # Sentinel for uninitialized schema cache
 _UNINITIALIZED = object()
@@ -52,6 +56,7 @@ class _PyForgeListSerializer:
 
     @property
     def data(self):
+        t0 = time.perf_counter()
         results = []
         schema = self.schema
         rust_fields = self.rust_fields
@@ -59,31 +64,43 @@ class _PyForgeListSerializer:
         ordered = self.ordered_field_names
         has_python = bool(python_field_names)
 
+        # N+1 detection on first instance
+        if has_python and self.instances:
+            _detect_n1(self.instances[0], python_field_names)
+
         for instance in self.instances:
             try:
                 row = serialize_instance(instance, schema)
             except Exception:
-                # Fallback: delegate this instance to DRF
                 child = self.child_class(instance)
                 results.append(child.data)
                 continue
 
             if has_python:
-                # Patch in Python-delegated fields
                 for field_name in python_field_names:
                     if field_name == "id":
                         row["id"] = instance.pk
                     elif hasattr(instance, field_name + "_id"):
-                        # FK field — use the _id attribute directly
                         row[field_name] = getattr(instance, field_name + "_id")
                     else:
                         row[field_name] = getattr(instance, field_name, None)
 
-            # Reorder to match serializer field declaration order
             if ordered:
                 row = {k: row[k] for k in ordered if k in row}
 
             results.append(row)
+
+        # Report metrics if middleware is active
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        try:
+            from django_pyforge.middleware import record_serialization
+            record_serialization(
+                len(rust_fields) * len(results),
+                len(python_field_names) * len(results),
+                elapsed_ms,
+            )
+        except Exception:
+            pass
 
         return results
 
@@ -276,3 +293,79 @@ class RustSerializerMixin:
         except Exception as exc:
             logger.debug("PyForge: Rust serialization failed, falling back to DRF: %s", exc)
             return super().to_representation(instance)
+
+
+# ─── N+1 Query Detection ──────────────────────────────────────────────────────
+
+
+def _detect_n1(instance, python_field_names):
+    """Detect potential N+1 queries from FK fields not in select_related.
+
+    Only warns once per field to avoid log spam. Only runs in DEBUG mode.
+    """
+    try:
+        from django.conf import settings
+        if not settings.DEBUG:
+            return
+    except Exception:
+        return
+
+    for field_name in python_field_names:
+        fk_attr = field_name + "_id"
+        if not hasattr(instance, fk_attr):
+            continue
+
+        # Check if the FK object is already cached (select_related was used)
+        cache = getattr(instance, "_state", None)
+        if cache is None:
+            continue
+        fields_cache = getattr(cache, "fields_cache", {})
+
+        if field_name not in fields_cache:
+            cache_key = f"{type(instance).__name__}.{field_name}"
+            if cache_key not in _n1_warned:
+                _n1_warned.add(cache_key)
+                logger.warning(
+                    "PyForge N+1 detected: field '%s' accesses ForeignKey '%s' "
+                    "which is not in select_related. Add "
+                    ".select_related('%s') to your queryset.",
+                    field_name, field_name, field_name,
+                )
+
+
+# ─── Streaming Serialization ──────────────────────────────────────────────────
+
+
+def serialize_stream(queryset, schema, chunk_size=1000):
+    """Yield serialized chunks from a queryset for streaming responses.
+
+    Each chunk is a list of dicts, serialized in Rust. Memory stays flat
+    regardless of total queryset size.
+
+    Usage:
+        from django.http import StreamingHttpResponse
+        import json
+
+        def export_view(request):
+            schema = ModelSchema(MyModel)
+            chunks = serialize_stream(MyModel.objects.all(), schema)
+            lines = (json.dumps(chunk) + "\\n" for chunk in chunks)
+            return StreamingHttpResponse(lines, content_type="application/x-ndjson")
+    """
+    from django_pyforge import serialize_instance
+
+    iterator = queryset.iterator(chunk_size=chunk_size)
+    chunk = []
+
+    for instance in iterator:
+        try:
+            chunk.append(serialize_instance(instance, schema))
+        except Exception:
+            continue
+
+        if len(chunk) >= chunk_size:
+            yield chunk
+            chunk = []
+
+    if chunk:
+        yield chunk

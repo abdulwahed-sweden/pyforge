@@ -296,6 +296,55 @@ fn validate_fields<'py>(
     validation_report_to_pydict(py, &report)
 }
 
+/// Serializes a QuerySet.values_list() result using a precompiled schema.
+///
+/// This is the fastest path — one Python↔Rust bridge crossing for the entire
+/// batch. Accepts the output of `qs.values_list(*fields, named=True)` or
+/// `qs.values_list(*fields)` (plain tuples).
+///
+/// Each row is accessed by index (tuple position), not by getattr —
+/// eliminating per-field Python method dispatch entirely.
+#[pyfunction]
+fn serialize_values_list<'py>(
+    py: Python<'py>,
+    rows: &Bound<'py, PyList>,
+    schema: &ModelSchema,
+) -> PyResult<Bound<'py, PyList>> {
+    let result = PyList::empty(py);
+    let descriptors = &schema.descriptors;
+
+    for row in rows.iter() {
+        let mut field_values = Vec::with_capacity(descriptors.len());
+
+        for (i, desc) in descriptors.iter().enumerate() {
+            let py_val = row.get_item(i);
+            match py_val {
+                Ok(val) if !val.is_none() => {
+                    let fv = model::convert_python_value_to_field(&val, desc)
+                        .map_err(|e| -> pyforge::PyErr { e.into() })?;
+                    field_values.push(fv);
+                }
+                _ => {
+                    if desc.nullable || desc.has_default {
+                        field_values.push(FieldValue::Null);
+                    } else {
+                        return Err(DjangoError::NullField {
+                            field: desc.name.clone(),
+                        }
+                        .into());
+                    }
+                }
+            }
+        }
+
+        let record = serializer::serialize_model_fields(descriptors, &field_values)
+            .map_err(|e| -> pyforge::PyErr { e.into() })?;
+        result.append(record_to_pydict(py, &record)?)?;
+    }
+
+    Ok(result)
+}
+
 /// Returns the pyforge-django version string.
 #[pyfunction]
 fn version() -> &'static str {
@@ -308,6 +357,7 @@ fn pyforge_django(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<ModelSchema>()?;
     m.add_function(wrap_pyfunction!(serialize_instance, m)?)?;
     m.add_function(wrap_pyfunction!(serialize_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(serialize_values_list, m)?)?;
     m.add_function(wrap_pyfunction!(validate_instance, m)?)?;
     m.add_function(wrap_pyfunction!(extract_model_fields, m)?)?;
     m.add_function(wrap_pyfunction!(serialize_fields, m)?)?;

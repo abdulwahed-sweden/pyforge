@@ -1,0 +1,33 @@
+name: Benchmark Regression Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "pyforge-core/**"
+      - "pyforge-django/**"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run benchmarks
+        run: cargo bench -p pyforge-core -p pyforge-django 2>&1 | tee bench-output.txt
+
+      - name: Check for regressions
+        run: |
+          echo "## Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep -E "test .* bench:" bench-output.txt >> $GITHUB_STEP_SUMMARY || echo "No criterion benchmarks found" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

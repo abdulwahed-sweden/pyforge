@@ -22,6 +22,16 @@ from pyforge_core._native import (
     version,
 )
 
+from pyforge_core.auto_schema import from_dataclass, from_typeddict
+from pyforge_core.constraints import (
+    DecimalPlaces,
+    MaxDigits,
+    MaxLength,
+    MaxValue,
+    MinLength,
+    MinValue,
+)
+
 __all__ = [
     "Schema",
     "Field",
@@ -30,4 +40,12 @@ __all__ = [
     "validate",
     "validate_many",
     "version",
+    "from_dataclass",
+    "from_typeddict",
+    "MaxLength",
+    "MinLength",
+    "MinValue",
+    "MaxValue",
+    "MaxDigits",
+    "DecimalPlaces",
 ]

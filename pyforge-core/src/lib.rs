@@ -148,6 +148,12 @@ impl Field {
             .and_then(|n| n.extract::<String>())
             .unwrap_or_default();
 
+        // Validate constraints match the declared type
+        validate_constraints(
+            &type_name, max_length, min_length, min_value, max_value,
+            max_digits, decimal_places,
+        )?;
+
         let field_type = match type_name.as_str() {
             "str" => FieldType::Str { max_length, min_length },
             "int" => FieldType::Int {
@@ -169,7 +175,7 @@ impl Field {
             "bytes" => FieldType::Bytes { max_length },
             other => {
                 return Err(CoreError::SchemaError {
-                    message: format!("unsupported type: {other}"),
+                    message: format!("unsupported type: '{other}'. Supported: str, int, float, bool, Decimal, datetime, date, time, UUID, list, dict, bytes"),
                 }
                 .into());
             }
@@ -185,6 +191,78 @@ impl Field {
     fn __repr__(&self) -> String {
         format!("Field({}, nullable={})", self.field_type.type_name(), self.nullable)
     }
+}
+
+/// Validates that constraints are appropriate for the declared type.
+/// Raises SchemaError immediately if a constraint doesn't apply.
+#[allow(clippy::too_many_arguments)]
+fn validate_constraints(
+    type_name: &str,
+    max_length: Option<usize>,
+    min_length: Option<usize>,
+    min_value: Option<&Bound<'_, PyAny>>,
+    max_value: Option<&Bound<'_, PyAny>>,
+    max_digits: Option<u32>,
+    decimal_places: Option<u32>,
+) -> PyResult<()> {
+    let has_length = max_length.is_some() || min_length.is_some();
+    let has_value = min_value.is_some() || max_value.is_some();
+    let has_decimal = max_digits.is_some() || decimal_places.is_some();
+
+    match type_name {
+        "str" => {
+            if has_value {
+                return Err(CoreError::SchemaError {
+                    message: "Field(str) does not support min_value/max_value. Use max_length/min_length instead.".into(),
+                }.into());
+            }
+            if has_decimal {
+                return Err(CoreError::SchemaError {
+                    message: "Field(str) does not support max_digits/decimal_places.".into(),
+                }.into());
+            }
+        }
+        "int" | "float" => {
+            if has_length {
+                return Err(CoreError::SchemaError {
+                    message: format!("Field({type_name}) does not support max_length/min_length. Use min_value/max_value instead."),
+                }.into());
+            }
+            if has_decimal {
+                return Err(CoreError::SchemaError {
+                    message: format!("Field({type_name}) does not support max_digits/decimal_places."),
+                }.into());
+            }
+        }
+        "Decimal" => {
+            if has_length {
+                return Err(CoreError::SchemaError {
+                    message: "Field(Decimal) does not support max_length/min_length. Use max_digits/decimal_places instead.".into(),
+                }.into());
+            }
+            if has_value {
+                return Err(CoreError::SchemaError {
+                    message: "Field(Decimal) does not support min_value/max_value. Use max_digits/decimal_places instead.".into(),
+                }.into());
+            }
+        }
+        "bool" | "datetime" | "date" | "time" | "UUID" | "list" | "dict" => {
+            if has_length || has_value || has_decimal {
+                return Err(CoreError::SchemaError {
+                    message: format!("Field({type_name}) does not support constraints. Only nullable and default are valid."),
+                }.into());
+            }
+        }
+        "bytes" => {
+            if has_value || has_decimal {
+                return Err(CoreError::SchemaError {
+                    message: "Field(bytes) only supports max_length. Not min_value/max_value or max_digits.".into(),
+                }.into());
+            }
+        }
+        _ => {}
+    }
+    Ok(())
 }
 
 fn extract_opt_i64(val: Option<&Bound<'_, PyAny>>) -> PyResult<Option<i64>> {
