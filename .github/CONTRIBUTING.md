@@ -83,6 +83,29 @@ pyforge-django/
 └── tests/                  # Django integration tests
 ```
 
+## Publishing
+
+For maintainers with publish access:
+
+```bash
+# 1. Copy the example env file and fill in your tokens
+cp .env.example .env
+# Edit .env — add your PyPI token and crates.io token
+
+# 2. Build wheels without publishing (to verify)
+./publish-pypi.sh --build
+
+# 3. Publish to PyPI
+./publish-pypi.sh all          # both pyforge-core and pyforge-django
+./publish-pypi.sh core         # pyforge-core only
+./publish-pypi.sh django       # pyforge-django only
+
+# 4. Publish to crates.io (all 7 crates in dependency order)
+./publish-crates.sh
+```
+
+Tokens are loaded from `.env` which is gitignored. Never commit tokens.
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under MIT.

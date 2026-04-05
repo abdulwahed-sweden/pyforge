@@ -1,107 +1,139 @@
 #!/bin/bash
 # Author: Abdulwahed Mansour
-# Builds and publishes pyforge-django to PyPI.
+# Builds and publishes PyForge packages to PyPI.
+# Usage: ./publish-pypi.sh [core|django|all]
 set -e
-
-BUILD_ONLY=""
-if [ "$1" = "--build" ]; then BUILD_ONLY=1; fi
 
 REPO="$(cd "$(dirname "$0")" && pwd)"
 WHEELS="$REPO/target/wheels"
 mkdir -p "$WHEELS"
 
-VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('$REPO/pyforge-django/pyproject.toml','rb'))['project']['version'])")
+# Load tokens from .env
+if [ ! -f "$REPO/.env" ]; then
+    echo "Error: .env file not found"
+    echo "Create .env with PYPI_TOKEN=your_token_here"
+    echo "See .env.example for the required format."
+    exit 1
+fi
+source "$REPO/.env"
 
-echo "PyForge Django v${VERSION} — Building wheel"
-echo ""
-
-# Step 1: Compile the Rust extension
-echo "Step 1: Compiling native extension..."
-cargo build -p pyforge-django --release
-DYLIB=$(find "$REPO/target/release" -maxdepth 1 \( -name 'libpyforge_django.dylib' -o -name 'libpyforge_django.so' -o -name 'pyforge_django.dll' \) | head -1)
-if [ -z "$DYLIB" ]; then echo "ERROR: compiled lib not found"; exit 1; fi
-echo "Built: $DYLIB ($(du -h "$DYLIB" | cut -f1))"
-
-# Step 2: Assemble the wheel
-echo ""
-echo "Step 2: Assembling wheel..."
-
-# Detect platform
-PYTAG="cp312"
-MACHINE=$(python3 -c "import platform; print(platform.machine().lower())")
-SYSTEM=$(python3 -c "import platform; print(platform.system().lower())")
-if [ "$SYSTEM" = "darwin" ]; then
-    PLAT="macosx_11_0_${MACHINE}"
-elif [ "$SYSTEM" = "linux" ]; then
-    PLAT="manylinux_2_17_${MACHINE}"
-else
-    PLAT="win_${MACHINE}"
+if [ -z "$PYPI_TOKEN" ] || [ "$PYPI_TOKEN" = "your_token_here" ]; then
+    echo "Error: PYPI_TOKEN not set in .env (or still has placeholder value)"
+    exit 1
 fi
 
-WHEEL_NAME="pyforge_django-${VERSION}-${PYTAG}-${PYTAG}-${PLAT}.whl"
-WHEEL_PATH="$WHEELS/$WHEEL_NAME"
+PACKAGE="${1:-all}"
 
-STAGING=$(mktemp -d)
-PKG="$STAGING/django_pyforge"
-DIST="$STAGING/pyforge_django-${VERSION}.dist-info"
-mkdir -p "$PKG" "$DIST"
+# ─── Build helpers ─────────────────────────────────────────────────────────────
 
-# Copy Python sources (entire package tree, excluding __pycache__)
-find "$REPO/pyforge-django/django_pyforge" -type d -name __pycache__ -prune -o -type f -print | while read f; do
-    rel="${f#$REPO/pyforge-django/django_pyforge/}"
-    dest="$PKG/$rel"
-    mkdir -p "$(dirname "$dest")"
-    cp "$f" "$dest"
-done
+detect_platform() {
+    local PYTAG="cp312"
+    local MACHINE
+    MACHINE=$(python3 -c "import platform; print(platform.machine().lower())")
+    local SYSTEM
+    SYSTEM=$(python3 -c "import platform; print(platform.system().lower())")
+    if [ "$SYSTEM" = "darwin" ]; then
+        PLAT="macosx_11_0_${MACHINE}"
+    elif [ "$SYSTEM" = "linux" ]; then
+        PLAT="manylinux_2_17_${MACHINE}"
+    else
+        PLAT="win_${MACHINE}"
+    fi
+    echo "${PYTAG}-${PYTAG}-${PLAT}"
+}
 
-# Copy the native extension at the root level (matches Rust lib name pyforge_django)
-cp "$DYLIB" "$STAGING/pyforge_django.so"
+build_wheel() {
+    local CRATE_NAME=$1      # e.g., pyforge-core
+    local PKG_NAME=$2        # e.g., pyforge_core
+    local PYPI_NAME=$3       # e.g., pyforge-core
+    local SRC_DIR=$4         # e.g., pyforge-core/pyforge_core
+    local LIB_NAME=$5        # e.g., libpyforge_core
 
-# Read README for description body
-README_CONTENT=$(cat "$REPO/pyforge-django/README.md")
+    local VERSION
+    VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('$REPO/$CRATE_NAME/pyproject.toml','rb'))['project']['version'])")
+    local TAG
+    TAG=$(detect_platform)
+    local WHEEL_NAME="${PKG_NAME}-${VERSION}-${TAG}.whl"
+    local WHEEL_PATH="$WHEELS/$WHEEL_NAME"
 
-# Write METADATA with full description
-cat > "$DIST/METADATA" << EOF
+    echo ""
+    echo "=== Building ${PYPI_NAME} v${VERSION} ==="
+    echo ""
+
+    # Compile
+    cargo build -p "$CRATE_NAME" --release
+    local DYLIB
+    DYLIB=$(find "$REPO/target/release" -maxdepth 1 \( -name "${LIB_NAME}.dylib" -o -name "${LIB_NAME}.so" -o -name "${PKG_NAME}.dll" \) | head -1)
+    if [ -z "$DYLIB" ]; then echo "ERROR: compiled lib not found for $CRATE_NAME"; exit 1; fi
+    echo "Built: $DYLIB ($(du -h "$DYLIB" | cut -f1))"
+
+    # Assemble wheel
+    local STAGING
+    STAGING=$(mktemp -d)
+    local PKG_DIR="$STAGING/$PKG_NAME"
+    local DIST="$STAGING/${PKG_NAME}-${VERSION}.dist-info"
+    mkdir -p "$PKG_DIR" "$DIST"
+
+    # Copy Python sources (entire tree, excluding __pycache__)
+    find "$REPO/$SRC_DIR" -type d -name __pycache__ -prune -o -type f -print | while read f; do
+        local rel="${f#$REPO/$SRC_DIR/}"
+        local dest="$PKG_DIR/$rel"
+        mkdir -p "$(dirname "$dest")"
+        cp "$f" "$dest"
+    done
+
+    # Copy native extension
+    if [ "$CRATE_NAME" = "pyforge-django" ]; then
+        # Django: .so at root level (matches Rust lib name pyforge_django)
+        cp "$DYLIB" "$STAGING/${PKG_NAME}.so"
+    else
+        # Core: .so inside the package as _native.so
+        cp "$DYLIB" "$PKG_DIR/_native.so"
+    fi
+
+    # README
+    local README_CONTENT
+    README_CONTENT=$(cat "$REPO/$CRATE_NAME/README.md")
+
+    # METADATA
+    local SUMMARY
+    SUMMARY=$(python3 -c "import tomllib; print(tomllib.load(open('$REPO/$CRATE_NAME/pyproject.toml','rb'))['project']['description'])")
+
+    cat > "$DIST/METADATA" << METAEOF
 Metadata-Version: 2.1
-Name: pyforge-django
+Name: ${PYPI_NAME}
 Version: ${VERSION}
-Summary: Rust-accelerated Django serialization, validation, and field mapping
+Summary: ${SUMMARY}
 Author: Abdulwahed Mansour
 License: MIT
 Requires-Python: >=3.11
-Requires-Dist: django>=4.2
-Classifier: Development Status :: 3 - Alpha
-Classifier: Framework :: Django
-Classifier: Framework :: Django :: 4.2
-Classifier: Framework :: Django :: 5.0
-Classifier: Framework :: Django :: 5.1
-Classifier: Programming Language :: Python :: 3.11
-Classifier: Programming Language :: Python :: 3.12
-Classifier: Programming Language :: Python :: 3.13
-Classifier: Programming Language :: Rust
 Description-Content-Type: text/markdown
 Project-URL: Homepage, https://github.com/abdulwahed-sweden/pyforge
 Project-URL: Repository, https://github.com/abdulwahed-sweden/pyforge
 
 ${README_CONTENT}
-EOF
+METAEOF
 
-# Write WHEEL
-cat > "$DIST/WHEEL" << EOF
+    # Add django dependency for pyforge-django
+    if [ "$CRATE_NAME" = "pyforge-django" ]; then
+        sed -i '' '6a\
+Requires-Dist: django>=4.2
+' "$DIST/METADATA"
+    fi
+
+    cat > "$DIST/WHEEL" << WHEELEOF
 Wheel-Version: 1.0
 Generator: pyforge-publish
 Root-Is-Purelib: false
-Tag: ${PYTAG}-${PYTAG}-${PLAT}
-EOF
+Tag: ${TAG}
+WHEELEOF
 
-# Write top_level.txt
-echo "django_pyforge" > "$DIST/top_level.txt"
-echo "pyforge_django" >> "$DIST/top_level.txt"
+    echo "$PKG_NAME" > "$DIST/top_level.txt"
 
-# Create the zip
-rm -f "$WHEEL_PATH"
-cd "$STAGING"
-python3 -c "
+    # Build zip
+    rm -f "$WHEEL_PATH"
+    cd "$STAGING"
+    python3 -c "
 import zipfile, os, hashlib, base64, csv, io
 whl = '$WHEEL_PATH'
 with zipfile.ZipFile(whl, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -114,27 +146,57 @@ with zipfile.ZipFile(whl, 'w', zipfile.ZIP_DEFLATED) as zf:
             zf.writestr(arc, data)
             h = base64.urlsafe_b64encode(hashlib.sha256(data).digest()).rstrip(b'=').decode()
             records.append((arc, f'sha256={h}', str(len(data))))
-    # RECORD
     buf = io.StringIO()
     w = csv.writer(buf)
     for r in records: w.writerow(r)
-    rec_path = 'pyforge_django-${VERSION}.dist-info/RECORD'
+    rec_path = '${PKG_NAME}-${VERSION}.dist-info/RECORD'
     w.writerow((rec_path, '', ''))
     zf.writestr(rec_path, buf.getvalue())
 "
+    rm -rf "$STAGING"
+    cd "$REPO"
 
-rm -rf "$STAGING"
-cd "$REPO"
+    echo "Wheel: $WHEEL_PATH ($(du -h "$WHEEL_PATH" | cut -f1))"
+}
 
-echo ""
-echo "Wheel built: $WHEEL_PATH"
-python3 -m zipfile -l "$WHEEL_PATH" | grep -E "\.so|\.pyd|\.py$|METADATA"
-echo ""
-ls -lh "$WHEEL_PATH"
-
-if [ -z "$BUILD_ONLY" ]; then
+publish_wheel() {
+    local PKG_NAME=$1
     echo ""
-    echo "Step 3: Uploading to PyPI..."
-    twine upload "$WHEEL_PATH"
-    echo "Published: pip install pyforge-django==${VERSION}"
-fi
+    echo "Publishing ${PKG_NAME}..."
+    TWINE_USERNAME=__token__ TWINE_PASSWORD="$PYPI_TOKEN" \
+        "$REPO/.venv/bin/twine" upload "$WHEELS/${PKG_NAME}"-*.whl
+    echo "${PKG_NAME} published."
+}
+
+# ─── Main ──────────────────────────────────────────────────────────────────────
+
+case $PACKAGE in
+    "core")
+        build_wheel "pyforge-core" "pyforge_core" "pyforge-core" "pyforge-core/pyforge_core" "libpyforge_core"
+        publish_wheel "pyforge_core"
+        ;;
+    "django")
+        build_wheel "pyforge-django" "pyforge_django" "pyforge-django" "pyforge-django/django_pyforge" "libpyforge_django"
+        publish_wheel "pyforge_django"
+        ;;
+    "all")
+        build_wheel "pyforge-core" "pyforge_core" "pyforge-core" "pyforge-core/pyforge_core" "libpyforge_core"
+        build_wheel "pyforge-django" "pyforge_django" "pyforge-django" "pyforge-django/django_pyforge" "libpyforge_django"
+        publish_wheel "pyforge_core"
+        publish_wheel "pyforge_django"
+        ;;
+    "--build")
+        build_wheel "pyforge-core" "pyforge_core" "pyforge-core" "pyforge-core/pyforge_core" "libpyforge_core"
+        build_wheel "pyforge-django" "pyforge_django" "pyforge-django" "pyforge-django/django_pyforge" "libpyforge_django"
+        echo ""
+        echo "Wheels built (not published). Run ./publish-pypi.sh all to publish."
+        ;;
+    *)
+        echo "Usage: ./publish-pypi.sh [core|django|all|--build]"
+        exit 1
+        ;;
+esac
+
+echo ""
+echo "https://pypi.org/project/pyforge-core/"
+echo "https://pypi.org/project/pyforge-django/"
