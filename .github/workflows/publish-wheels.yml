@@ -9,7 +9,9 @@ permissions:
   contents: read
 
 jobs:
-  build-linux:
+  # ── clarax-django wheels ────────────────────────────────────────────
+
+  django-linux:
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       fail-fast: false
@@ -25,7 +27,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Build wheel
+      - name: Build clarax-django wheel
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
@@ -33,10 +35,10 @@ jobs:
           manylinux: "2_28"
       - uses: actions/upload-artifact@v4
         with:
-          name: wheel-linux-${{ matrix.platform.target }}-py${{ matrix.python-version }}
+          name: django-linux-${{ matrix.platform.target }}-py${{ matrix.python-version }}
           path: target/wheels/*.whl
 
-  build-macos:
+  django-macos:
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       fail-fast: false
@@ -54,17 +56,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Build wheel
+      - name: Build clarax-django wheel
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target == 'aarch64' && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}
           args: --release --strip -m clarax-django/Cargo.toml -i python${{ matrix.python-version }}
       - uses: actions/upload-artifact@v4
         with:
-          name: wheel-macos-${{ matrix.platform.target }}-py${{ matrix.python-version }}
+          name: django-macos-${{ matrix.platform.target }}-py${{ matrix.python-version }}
           path: target/wheels/*.whl
 
-  build-windows:
+  django-windows:
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -75,32 +77,134 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Build wheel
+      - name: Build clarax-django wheel
         uses: PyO3/maturin-action@v1
         with:
           target: x86_64
           args: --release --strip -m clarax-django/Cargo.toml -i python${{ matrix.python-version }}
       - uses: actions/upload-artifact@v4
         with:
-          name: wheel-windows-x86_64-py${{ matrix.python-version }}
+          name: django-windows-x86_64-py${{ matrix.python-version }}
           path: target/wheels/*.whl
 
-  build-sdist:
+  django-sdist:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build sdist
+      - name: Build clarax-django sdist
         uses: PyO3/maturin-action@v1
         with:
           command: sdist
           args: -m clarax-django/Cargo.toml
       - uses: actions/upload-artifact@v4
         with:
-          name: sdist
+          name: django-sdist
           path: target/wheels/*.tar.gz
 
+  # ── clarax-core wheels ──────────────────────────────────────────────
+
+  core-linux:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runner: ubuntu-latest
+            target: x86_64
+          - runner: ubuntu-24.04-arm
+            target: aarch64
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build clarax-core wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --strip -m clarax-core/Cargo.toml -i python${{ matrix.python-version }}
+          manylinux: "2_28"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-linux-${{ matrix.platform.target }}-py${{ matrix.python-version }}
+          path: target/wheels/*.whl
+
+  core-macos:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runner: macos-13
+            target: x86_64
+          - runner: macos-14
+            target: aarch64
+        python-version: ["3.11", "3.12", "3.13"]
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "11.0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build clarax-core wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target == 'aarch64' && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}
+          args: --release --strip -m clarax-core/Cargo.toml -i python${{ matrix.python-version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-macos-${{ matrix.platform.target }}-py${{ matrix.python-version }}
+          path: target/wheels/*.whl
+
+  core-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build clarax-core wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          args: --release --strip -m clarax-core/Cargo.toml -i python${{ matrix.python-version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-windows-x86_64-py${{ matrix.python-version }}
+          path: target/wheels/*.whl
+
+  core-sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build clarax-core sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: -m clarax-core/Cargo.toml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-sdist
+          path: target/wheels/*.tar.gz
+
+  # ── Publish all wheels to PyPI ──────────────────────────────────────
+
   publish:
-    needs: [build-linux, build-macos, build-windows, build-sdist]
+    needs:
+      - django-linux
+      - django-macos
+      - django-windows
+      - django-sdist
+      - core-linux
+      - core-macos
+      - core-windows
+      - core-sdist
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
@@ -110,9 +214,10 @@ jobs:
         with:
           path: dist
           merge-multiple: true
-      - name: List wheels
+      - name: List all wheels
         run: ls -lh dist/
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: true
