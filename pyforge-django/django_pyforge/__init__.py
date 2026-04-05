@@ -6,7 +6,7 @@ Drop-in accelerators for Django REST Framework serializers and validators.
 """
 
 __author__ = "Abdulwahed Mansour"
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 try:
     from pyforge_django import (

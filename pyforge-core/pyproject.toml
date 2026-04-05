@@ -5,7 +5,7 @@ build-backend = "maturin"
 
 [project]
 name = "pyforge-core"
-version = "0.2.0"
+version = "0.3.0"
 description = "Rust-accelerated serialization and validation for Python — framework-agnostic"
 readme = "README.md"
 authors = [{ name = "Abdulwahed Mansour" }]
