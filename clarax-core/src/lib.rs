@@ -45,6 +45,10 @@ use uuid::Uuid;
 pub struct Schema {
     descriptors: Vec<FieldDescriptor>,
     field_names: Vec<String>,
+    /// Indices of fields that need conversion during serialization
+    /// (Decimal→str, UUID→str, DateTime/Date/Time→isoformat, Bytes→base64).
+    /// Fields not listed here are passthrough (str, int, float, bool, list, dict).
+    convert_indices: Vec<usize>,
 }
 
 #[pymethods]
@@ -71,9 +75,26 @@ impl Schema {
             });
         }
 
+        // Pre-classify which fields need conversion during serialization.
+        let convert_indices: Vec<usize> = descriptors
+            .iter()
+            .enumerate()
+            .filter(|(_, d)| matches!(
+                d.field_type,
+                FieldType::Decimal { .. }
+                    | FieldType::Uuid
+                    | FieldType::DateTime
+                    | FieldType::Date
+                    | FieldType::Time
+                    | FieldType::Bytes { .. }
+            ))
+            .map(|(i, _)| i)
+            .collect();
+
         Ok(Schema {
             descriptors,
             field_names,
+            convert_indices,
         })
     }
 
@@ -303,10 +324,10 @@ fn serialize<'py>(
 
 /// Serializes a list of dicts or objects using a precompiled schema.
 ///
-/// Returns a list of dicts. Uses a fast path for dict inputs that skips
-/// intermediate FieldValue/serde_json representations — directly copies
-/// Python references for str/int/float/bool and only converts
-/// Decimal/UUID/datetime fields.
+/// Returns a list of dicts. For dict inputs, uses `PyDict_Copy` to shallow-copy
+/// the entire input dict in one C call, then only overwrites fields that need
+/// conversion (Decimal→str, UUID→str, DateTime→isoformat, Bytes→base64).
+/// Passthrough fields (str, int, float, bool, list, dict) are never touched.
 #[pyfunction]
 fn serialize_many<'py>(
     py: Python<'py>,
@@ -315,53 +336,51 @@ fn serialize_many<'py>(
 ) -> PyResult<Bound<'py, PyList>> {
     let result = PyList::empty(py);
 
-    // Pre-intern field name strings — reused for every record's get_item/set_item
-    let py_names: Vec<Bound<'_, PyString>> = schema
-        .field_names
+    // Pre-intern field name strings for convert fields only
+    let convert_keys: Vec<(&FieldDescriptor, Bound<'_, PyString>)> = schema
+        .convert_indices
         .iter()
-        .map(|n| PyString::intern(py, n))
+        .map(|&i| (&schema.descriptors[i], PyString::intern(py, &schema.field_names[i])))
         .collect();
+
+    let has_converts = !convert_keys.is_empty();
 
     for item in data_list.iter() {
         if let Ok(input_dict) = item.cast::<PyDict>() {
-            let output = PyDict::new(py);
-            for (i, desc) in schema.descriptors.iter().enumerate() {
-                let key = &py_names[i];
-                let py_val = input_dict.get_item(key)?;
-                let py_val = match py_val {
-                    Some(v) if !v.is_none() => v,
-                    _ => {
-                        if desc.nullable || desc.has_default {
-                            output.set_item(key, py.None())?;
-                            continue;
+            // Fast path: shallow-copy the dict (one C call copies all entries),
+            // then overwrite only the fields that need type conversion.
+            let output = input_dict.copy()?;
+
+            if has_converts {
+                for (desc, key) in &convert_keys {
+                    let py_val = match output.get_item(key)? {
+                        Some(v) if !v.is_none() => v,
+                        _ => {
+                            if desc.nullable || desc.has_default {
+                                continue;
+                            }
+                            return Err(CoreError::NullField {
+                                field: desc.name.clone(),
+                            }
+                            .into());
                         }
-                        return Err(CoreError::NullField {
-                            field: desc.name.clone(),
+                    };
+                    match &desc.field_type {
+                        FieldType::Decimal { .. } | FieldType::Uuid => {
+                            output.set_item(key, py_val.str()?)?;
                         }
-                        .into());
-                    }
-                };
-                // Fast path: for most types, pass the Python object through directly.
-                // Only Decimal/UUID/datetime need conversion.
-                match &desc.field_type {
-                    FieldType::Str { .. }
-                    | FieldType::Int { .. }
-                    | FieldType::Float { .. }
-                    | FieldType::Bool
-                    | FieldType::List
-                    | FieldType::Dict => {
-                        output.set_item(key, &py_val)?;
-                    }
-                    FieldType::Decimal { .. } | FieldType::Uuid => {
-                        output.set_item(key, py_val.str()?)?;
-                    }
-                    FieldType::DateTime | FieldType::Date | FieldType::Time => {
-                        output.set_item(key, py_val.call_method0("isoformat")?)?;
-                    }
-                    FieldType::Bytes { .. } => {
-                        let base64_mod = py.import("base64")?;
-                        let encoded = base64_mod.call_method1("b64encode", (&py_val,))?;
-                        output.set_item(key, encoded.call_method1("decode", ("ascii",))?)?;
+                        FieldType::DateTime | FieldType::Date | FieldType::Time => {
+                            output.set_item(key, py_val.call_method0("isoformat")?)?;
+                        }
+                        FieldType::Bytes { .. } => {
+                            let base64_mod = py.import("base64")?;
+                            let encoded = base64_mod.call_method1("b64encode", (&py_val,))?;
+                            output.set_item(
+                                key,
+                                encoded.call_method1("decode", ("ascii",))?,
+                            )?;
+                        }
+                        _ => {}
                     }
                 }
             }
@@ -599,8 +618,10 @@ fn validate_py_value_inline(
             }
         }
         FieldType::Decimal { max_digits, decimal_places } => {
-            let s: String = match val.str().and_then(|s| s.extract()) {
-                Ok(v) => v,
+            // Zero-copy: borrow the string from Python's internal buffer,
+            // then count digits/scale directly without parsing into rust_decimal.
+            let py_str = match val.str() {
+                Ok(s) => s,
                 Err(_) => {
                     errors.push(FieldValidationError {
                         field_name: desc.name.clone(),
@@ -611,8 +632,8 @@ fn validate_py_value_inline(
                     return;
                 }
             };
-            let d = match Decimal::from_str_exact(&s) {
-                Ok(v) => v,
+            let s = match py_str.to_str() {
+                Ok(s) => s,
                 Err(_) => {
                     errors.push(FieldValidationError {
                         field_name: desc.name.clone(),
@@ -623,9 +644,7 @@ fn validate_py_value_inline(
                     return;
                 }
             };
-            let mantissa_abs = d.mantissa().unsigned_abs();
-            let total_digits = if mantissa_abs == 0 { 1u32 } else { mantissa_abs.ilog10() + 1 };
-            let scale = d.scale();
+            let (total_digits, scale) = count_decimal_digits(s);
             if let Some(max_d) = max_digits {
                 if total_digits > *max_d {
                     errors.push(FieldValidationError {
@@ -728,6 +747,50 @@ fn validate_py_value_inline(
                 }
             }
         }
+    }
+}
+
+/// Counts total significant digits and decimal places from a Decimal's string
+/// representation. Avoids parsing into `rust_decimal::Decimal` (which is ~200ns)
+/// when we only need digit/scale counts for validation.
+///
+/// Handles: "50000.00" → (7, 2), "0.1" → (1, 1), "-123.45" → (5, 2),
+/// "0" → (1, 0), "0.00" → (1, 2), "1E+2" → (3, 0)
+fn count_decimal_digits(s: &str) -> (u32, u32) {
+    let s = s.strip_prefix('-').unwrap_or(s);
+
+    // Handle scientific notation (e.g., "1E+2", "1.5E-3")
+    if let Some(e_pos) = s.find(['E', 'e']) {
+        let mantissa_str = &s[..e_pos];
+        let exp: i32 = s[e_pos + 1..].parse().unwrap_or(0);
+        let (m_digits, m_scale) = count_decimal_digits(mantissa_str);
+        let effective_scale = (m_scale as i32 - exp).max(0) as u32;
+        let effective_digits = (m_digits as i32 + exp.max(0)).max(1) as u32;
+        return (effective_digits, effective_scale);
+    }
+
+    if let Some(dot_pos) = s.find('.') {
+        let int_part = &s[..dot_pos];
+        let dec_part = &s[dot_pos + 1..];
+        let scale = dec_part.len() as u32;
+
+        // Count significant digits: all digits in mantissa (int_part + dec_part)
+        // with leading zeros stripped, but at least 1.
+        let combined: String = int_part.chars().chain(dec_part.chars()).collect();
+        let significant = combined.trim_start_matches('0').len().max(1) as u32;
+
+        // Match rust_decimal behavior: total digits = significant digits in mantissa
+        // but trailing zeros in dec_part count (e.g., "50000.00" mantissa is 5000000 = 7 digits)
+        let all_digits = combined.len().max(1) as u32;
+        let leading_zeros = combined.len() as u32 - significant;
+        let total = all_digits - leading_zeros;
+
+        (total.max(1), scale)
+    } else {
+        // No decimal point
+        let trimmed = s.trim_start_matches('0');
+        let digits = trimmed.len().max(1) as u32;
+        (digits, 0)
     }
 }
 

@@ -9,15 +9,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Fixed
 - **clarax-core**: `serialize_many` and `validate_many` now faster than pure Python on dict-based workloads of 1,000+ records
-  - Serialization: direct Python→Python conversion skips intermediate FieldValue/serde_json representations — str/int/float/bool fields pass through with zero Rust allocation
-  - Validation: inline validation from Python objects eliminates FieldValue extraction — string length checked via Python `len()` (O(1)) instead of extracting full Rust String
-  - Pre-interned field name strings avoid repeated Python string creation per record
-  - Eliminated 550K descriptor clones per 50K-record batch (was cloning `FieldDescriptor` including heap-allocated `String` name for every field of every record)
-  - Removed Rayon overhead from validation hot path for dict inputs
+  - Serialization: `PyDict_Copy` shallow-copies entire input dict, only overwrites Decimal/UUID/datetime fields — passthrough fields (str, int, float, bool) never individually accessed
+  - Validation: inline validation from Python objects — string length via `len()` (O(1)), Decimal digits via zero-copy `to_str()` string inspection (no `rust_decimal` parsing), bool by isinstance only
+  - Pre-interned field names, pre-classified field types at Schema construction time
+  - Eliminated 550K descriptor clones per 50K-record batch
 
 ### Performance
-- `serialize_many` 50K dicts: **1.5x** faster than pure Python (was 0.3x — 5x improvement)
-- `validate_many` 50K dicts: **1.4x** faster than pure Python (was 0.3x — 4.7x improvement)
+- `serialize_many` 50K dicts: **2.2x** faster than pure Python (was 0.3x — 7.3x improvement)
+- `serialize_many` 1K dicts: **3.0x** faster than pure Python
+- `validate_many` 50K dicts: **1.6x** faster than pure Python (was 0.3x — 5.3x improvement)
 - `validate_many` 1K dicts: **1.0x** parity (was 0.03x due to Rayon thread pool startup)
 
 ## [0.3.0] — 2026-04-05
